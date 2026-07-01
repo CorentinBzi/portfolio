@@ -1,0 +1,10 @@
+# Claude Code local config (ne pas publier)
+.claude/
+
+# Source PDF du CV — décommente la ligne suivante si tu veux
+# le publier en téléchargement à côté du site :
+CV Corentin Bezille - Cyber & IT Control Compliance Analyst.pdf
+
+# Divers OS / éditeurs
+Thumbs.db
+.DS_Store

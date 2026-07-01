@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>SecAudit // Corentin Bezille — Interactive CV</title>
+<meta name="description" content="An interactive cybersecurity audit game that unlocks the CV of Corentin Bezille, Cyber & IT Control Compliance Analyst." />
+<style>
+/* =============================================================
+   THEME TOKENS
+   Cyberpunk / Retro-terminal / Data-center aesthetic
+   ============================================================= */
+:root{
+  --bg:            #0f172a;   /* deep slate/navy background */
+  --bg-2:          #0b1120;   /* darker vignette */
+  --panel:         #111c33;   /* panel surface */
+  --panel-2:       #16233f;   /* raised surface */
+  --line:          #23324f;   /* hairline borders */
+  --line-soft:     #1b2a45;
+
+  --blue:          #2563eb;   /* electric blue accent */
+  --blue-2:        #3b82f6;
+  --blue-glow:     rgba(37,99,235,.55);
+
+  --green:         #22c55e;   /* compliance / success */
+  --green-neon:    #4ade80;
+  --green-glow:    rgba(34,197,94,.55);
+
+  --amber:         #f59e0b;
+  --red:           #ef4444;
+  --red-glow:      rgba(239,68,68,.5);
+
+  --text:          #e6edf7;   /* primary text */
+  --muted:         #93a4c2;   /* secondary text */
+  --dim:           #5f7398;   /* tertiary text */
+
+  --mono: 'Cascadia Code','Fira Code','JetBrains Mono','Consolas','Courier New',monospace;
+  --sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+
+/* =============================================================
+   RESET & BASE
+   ============================================================= */
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{
+  font-family:var(--sans);
+  color:var(--text);
+  background:
+    radial-gradient(1200px 700px at 15% -10%, #16244480 0%, transparent 60%),
+    radial-gradient(1000px 600px at 110% 10%, #1d2b5240 0%, transparent 55%),
+    var(--bg);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--blue); color:#fff; }
+
+/* Thin custom scrollbar */
+*::-webkit-scrollbar{ width:9px; height:9px; }
+*::-webkit-scrollbar-track{ background:transparent; }
+*::-webkit-scrollbar-thumb{ background:#26436e; border-radius:20px; }
+*::-webkit-scrollbar-thumb:hover{ background:#3a5f9c; }
+
+/* Canvas grid backdrop */
+#bg-canvas{
+  position:fixed; inset:0; z-index:0;
+  opacity:.5; pointer-events:none;
+}
+
+/* =============================================================
+   APP SHELL
+   ============================================================= */
+#app{
+  position:relative; z-index:1;
+  height:100vh;
+  display:flex; flex-direction:column;
+}
+
+/* ---------- Top bar ---------- */
+header.topbar{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:16px;
+  padding:10px 18px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, #0d1830 0%, #0b1428 100%);
+  box-shadow:0 1px 0 #ffffff08;
+}
+.brand{ display:flex; align-items:center; gap:11px; min-width:0; }
+.brand .logo{
+  width:34px; height:34px; flex:0 0 auto;
+  display:grid; place-items:center;
+  border:1px solid var(--blue); border-radius:8px;
+  color:var(--blue-2);
+  box-shadow:0 0 14px var(--blue-glow), inset 0 0 12px #2563eb22;
+  background:#0c1a35;
+}
+.brand .logo svg{ width:20px; height:20px; }
+.brand .title{ font-family:var(--mono); font-size:13px; letter-spacing:.5px; line-height:1.15; }
+.brand .title b{ color:#fff; font-weight:700; }
+.brand .title span{ display:block; color:var(--dim); font-size:11px; }
+
+.topbar .spacer{ flex:1 1 auto; }
+
+/* Clearance progress dots */
+.clearance{ display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:11px; color:var(--muted); }
+.clearance .dots{ display:flex; gap:5px; }
+.clearance .dot{
+  width:11px; height:11px; border-radius:50%;
+  border:1px solid var(--line); background:#0c1730;
+  transition:.35s;
+}
+.clearance .dot.on{
+  background:var(--green); border-color:var(--green-neon);
+  box-shadow:0 0 10px var(--green-glow);
+}
+
+/* Buttons */
+.btn{
+  font-family:var(--mono); font-size:12px; letter-spacing:.4px;
+  color:var(--text); cursor:pointer; user-select:none;
+  border:1px solid var(--line); background:var(--panel-2);
+  padding:8px 13px; border-radius:8px;
+  transition:transform .08s, box-shadow .2s, border-color .2s, background .2s;
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+}
+.btn:hover{ border-color:var(--blue); box-shadow:0 0 12px var(--blue-glow); }
+.btn:active{ transform:translateY(1px); }
+.btn.ghost{ background:transparent; }
+.btn.icon{ padding:8px 10px; }
+.btn.bypass{
+  border-color:#7c3aed; color:#e9d5ff;
+  background:linear-gradient(180deg,#3b1e6e,#2a1550);
+}
+.btn.bypass:hover{ box-shadow:0 0 16px #7c3aed88; border-color:#a78bfa; }
+.btn.primary{
+  border-color:var(--blue); color:#fff;
+  background:linear-gradient(180deg,var(--blue-2),var(--blue));
+}
+.btn.primary:hover{ box-shadow:0 0 16px var(--blue-glow); }
+.btn:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+
+/* ---------- Main split ---------- */
+main.split{
+  flex:1 1 auto; min-height:0;
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:14px; padding:14px;
+}
+.pane{
+  min-height:0;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:linear-gradient(180deg,#0f1c34 0%, #0d1830 100%);
+  box-shadow:var(--shadow);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.pane .pane-head{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:9px;
+  padding:9px 13px; border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:11px; letter-spacing:1px;
+  color:var(--dim); text-transform:uppercase;
+  background:#0c1830;
+}
+.pane .pane-head .led{ width:8px; height:8px; border-radius:50%; background:var(--blue); box-shadow:0 0 8px var(--blue-glow); }
+.pane .pane-head .led.g{ background:var(--green); box-shadow:0 0 8px var(--green-glow); }
+.pane .pane-body{ flex:1 1 auto; min-height:0; overflow:auto; position:relative; }
+
+/* =============================================================
+   BOOT SCREEN
+   ============================================================= */
+#boot{
+  position:fixed; inset:0; z-index:50;
+  background:radial-gradient(900px 600px at 50% 30%, #0d1c3a 0%, var(--bg-2) 70%);
+  display:flex; align-items:center; justify-content:center;
+  padding:30px;
+}
+.boot-card{
+  width:min(760px, 94vw);
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:linear-gradient(180deg,#0c1730,#0a1226);
+  box-shadow:0 24px 70px rgba(0,0,0,.6), inset 0 0 0 1px #ffffff06;
+  overflow:hidden;
+}
+.boot-titlebar{
+  display:flex; align-items:center; gap:8px;
+  padding:9px 13px; border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:11px; color:var(--dim);
+}
+.boot-titlebar .tb-dot{ width:11px;height:11px;border-radius:50%; }
+.tb-dot.r{ background:#ff5f56; } .tb-dot.y{ background:#ffbd2e; } .tb-dot.g{ background:#27c93f; }
+.boot-skip{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.4px; cursor:pointer;
+  color:#c4b5fd; background:transparent; border:1px solid #4c3a7a; border-radius:6px;
+  padding:4px 9px; transition:.2s;
+}
+.boot-skip:hover{ border-color:#a78bfa; box-shadow:0 0 10px #7c3aed66; color:#e9d5ff; }
+.boot-screen{
+  font-family:var(--mono); font-size:13.5px; line-height:1.65;
+  padding:22px 24px; min-height:340px;
+  color:#c7d6f0;
+}
+.boot-screen .ln{ white-space:pre-wrap; }
+.boot-screen .ok{ color:var(--green-neon); }
+.boot-screen .warn{ color:var(--amber); }
+.boot-screen .info{ color:var(--blue-2); }
+.boot-screen .grant{ color:var(--green-neon); font-weight:700; text-shadow:0 0 12px var(--green-glow); }
+.boot-screen .role{
+  color:#fff; font-weight:700; font-size:16px;
+  text-shadow:0 0 14px var(--blue-glow);
+}
+.cursor{ display:inline-block; width:9px; height:16px; background:var(--green-neon);
+  transform:translateY(2px); animation:blink 1s steps(1) infinite; box-shadow:0 0 8px var(--green-glow); }
+@keyframes blink{ 50%{ opacity:0; } }
+.boot-cta{
+  padding:0 24px 24px; text-align:center;
+  opacity:0; transition:opacity .5s;
+}
+.boot-cta.show{ opacity:1; }
+.boot-cta .hint{ font-family:var(--mono); color:var(--dim); font-size:11px; margin-top:12px; }
+.boot-cta .big{
+  font-family:var(--mono); font-size:15px; padding:13px 26px;
+  animation:pulseGlow 1.8s ease-in-out infinite;
+}
+@keyframes pulseGlow{
+  0%,100%{ box-shadow:0 0 0 var(--green-glow); }
+  50%{ box-shadow:0 0 22px var(--green-glow); }
+}
+
+/* =============================================================
+   GAME PANE (LEFT)
+   ============================================================= */
+.game-wrap{ padding:16px; height:100%; display:flex; flex-direction:column; gap:14px; }
+
+/* Mission intro */
+.mission-intro{ font-family:var(--mono); font-size:12px; color:var(--muted); line-height:1.6; }
+.mission-intro b{ color:var(--blue-2); }
+
+/* Zone map grid */
+.zone-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  flex:1 1 auto; min-height:0;
+}
+.zone-card{
+  position:relative; cursor:pointer;
+  border:1px solid var(--line); border-radius:12px;
+  background:linear-gradient(180deg,#101f3b,#0d1830);
+  padding:16px; overflow:hidden;
+  display:flex; flex-direction:column; gap:8px;
+  transition:transform .12s, border-color .2s, box-shadow .2s;
+}
+.zone-card::after{ /* scanline sheen */
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 40%, #2563eb14 50%, transparent 60%);
+  transform:translateX(-120%); transition:transform .6s;
+}
+.zone-card:hover{ transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 26px #00000055, 0 0 0 1px var(--blue-glow); }
+.zone-card:hover::after{ transform:translateX(120%); }
+.zone-card.sel{ border-color:var(--blue); box-shadow:0 0 0 1px var(--blue), 0 0 22px var(--blue-glow); }
+.zone-card.done{ border-color:#20603f; background:linear-gradient(180deg,#0e2a1e,#0c2018); }
+.zone-card.done:hover{ box-shadow:0 10px 26px #00000055, 0 0 0 1px var(--green-glow); }
+
+.zone-card .zc-top{ display:flex; align-items:center; justify-content:space-between; }
+.zone-card .zc-icon{ font-size:30px; line-height:1; filter:drop-shadow(0 0 10px #2563eb66); }
+.zone-card.done .zc-icon{ filter:drop-shadow(0 0 10px var(--green-glow)); }
+.zone-card .zc-status{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.6px;
+  padding:3px 8px; border-radius:20px; border:1px solid var(--line);
+  color:var(--amber); text-transform:uppercase; white-space:nowrap;
+}
+.zone-card.done .zc-status{ color:var(--green-neon); border-color:#20603f; }
+.zone-card .zc-title{ font-family:var(--mono); font-size:14px; color:#fff; letter-spacing:.3px; }
+.zone-card .zc-sub{ font-size:11.5px; color:var(--muted); line-height:1.45; }
+.zone-card .zc-task{ margin-top:auto; font-family:var(--mono); font-size:10.5px; color:var(--dim); }
+.zone-card .zc-task b{ color:var(--blue-2); }
+.zone-card .zc-key{
+  position:absolute; top:10px; left:12px;
+  font-family:var(--mono); font-size:10px; color:var(--dim);
+}
+
+/* Map footer help */
+.map-help{ font-family:var(--mono); font-size:10.5px; color:var(--dim); text-align:center; letter-spacing:.4px; }
+.map-help kbd{
+  font-family:var(--mono); background:#0c1830; border:1px solid var(--line);
+  border-bottom-width:2px; border-radius:5px; padding:1px 6px; color:var(--muted); margin:0 1px;
+}
+
+/* =============================================================
+   CHALLENGE VIEW (inside game pane)
+   ============================================================= */
+.challenge{ height:100%; display:flex; flex-direction:column; gap:12px; }
+.ch-head{ display:flex; align-items:center; gap:11px; }
+.ch-head .ch-ic{ font-size:26px; filter:drop-shadow(0 0 10px #2563eb66); }
+.ch-head .ch-tt{ font-family:var(--mono); font-size:15px; color:#fff; }
+.ch-head .ch-tt small{ display:block; color:var(--dim); font-size:11px; font-weight:400; letter-spacing:.3px; }
+.ch-desc{
+  font-family:var(--mono); font-size:11.5px; color:var(--muted); line-height:1.6;
+  border-left:2px solid var(--blue); padding:6px 0 6px 12px; background:#0c1830; border-radius:0 8px 8px 0;
+}
+.ch-desc b{ color:var(--blue-2); }
+.ch-stage{
+  flex:1 1 auto; min-height:0; position:relative;
+  border:1px solid var(--line-soft); border-radius:10px;
+  background:#0a132a;
+  padding:14px; overflow:auto;
+}
+.ch-foot{ display:flex; align-items:center; gap:10px; }
+.ch-foot .status{ font-family:var(--mono); font-size:11px; color:var(--muted); flex:1; }
+.ch-foot .status.good{ color:var(--green-neon); }
+.ch-foot .status.bad{ color:#fca5a5; }
+
+/* generic meter */
+.meter{ height:9px; border-radius:20px; background:#0c1830; border:1px solid var(--line); overflow:hidden; }
+.meter > i{ display:block; height:100%; background:linear-gradient(90deg,var(--green),var(--green-neon)); width:0; transition:width .3s; }
+.meter.warn > i{ background:linear-gradient(90deg,#b45309,var(--amber)); }
+.meter.danger > i{ background:linear-gradient(90deg,#991b1b,var(--red)); }
+
+/* ---- Zone1: Incident grid ---- */
+.dc-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.dc-node{
+  position:relative; aspect-ratio:1/.82;
+  border:1px solid var(--line); border-radius:10px; cursor:pointer;
+  background:#0e1c37; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  font-family:var(--mono); transition:.15s; overflow:hidden;
+}
+.dc-node .nm{ font-size:11px; color:var(--muted); }
+.dc-node .st{ font-size:9px; color:var(--green-neon); letter-spacing:.5px; }
+.dc-node .rack{ font-size:22px; }
+.dc-node.alert{ border-color:var(--red); background:#2a1220; animation:alarm 1s ease-in-out infinite; cursor:pointer; }
+.dc-node.alert .st{ color:#fca5a5; }
+.dc-node.alert::before{
+  content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 40%, #ef444433, transparent 70%);
+}
+@keyframes alarm{ 0%,100%{ box-shadow:0 0 0 #ef444400; } 50%{ box-shadow:0 0 20px var(--red-glow); } }
+.dc-node.resolved{ animation:flashGreen .5s; }
+@keyframes flashGreen{ 0%{ box-shadow:0 0 22px var(--green-glow);} 100%{ box-shadow:none; } }
+
+/* ---- Zone2: DMARC mail triage ---- */
+.mail-card{
+  border:1px solid var(--line); border-radius:10px; background:#0e1c37; padding:14px;
+  font-family:var(--mono); display:flex; flex-direction:column; gap:9px;
+}
+.mail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12px; }
+.mail-row .k{ color:var(--dim); }
+.mail-row .v{ color:var(--text); text-align:right; word-break:break-all; }
+.auth-badges{ display:flex; gap:8px; flex-wrap:wrap; }
+.auth-badge{ font-size:10.5px; padding:3px 9px; border-radius:6px; border:1px solid var(--line); }
+.auth-badge.pass{ color:var(--green-neon); border-color:#20603f; background:#0e2a1e; }
+.auth-badge.fail{ color:#fca5a5; border-color:#7f1d1d; background:#2a1220; }
+.mail-actions{ display:flex; gap:10px; margin-top:4px; }
+.mail-actions .btn{ flex:1; justify-content:center; }
+.btn.allow{ border-color:#20603f; color:var(--green-neon); }
+.btn.allow:hover{ box-shadow:0 0 12px var(--green-glow); }
+.btn.block{ border-color:#7f1d1d; color:#fca5a5; }
+.btn.block:hover{ box-shadow:0 0 12px var(--red-glow); }
+.mail-verdict{ font-family:var(--mono); font-size:11px; text-align:center; min-height:16px; }
+
+/* ---- Zone3: storage volumes ---- */
+.vol{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px dashed var(--line-soft); cursor:pointer; }
+.vol:last-child{ border-bottom:none; }
+.vol .vname{ font-family:var(--mono); font-size:12px; width:120px; color:var(--muted); flex:0 0 auto; }
+.vol .vbar{ flex:1; }
+.vol .vpct{ font-family:var(--mono); font-size:12px; width:52px; text-align:right; flex:0 0 auto; color:var(--muted); }
+.vol .vsel{
+  width:20px; height:20px; flex:0 0 auto; border-radius:6px; border:1px solid var(--line);
+  display:grid; place-items:center; font-size:12px; color:transparent; background:#0c1830;
+}
+.vol.picked .vsel{ color:var(--blue-2); border-color:var(--blue); box-shadow:0 0 10px var(--blue-glow); }
+.vol.over .vname{ color:#fca5a5; }
+
+/* ---- Zone4: OWASP quiz ---- */
+.quiz-q{ font-family:var(--mono); font-size:13px; color:#fff; line-height:1.55; margin-bottom:12px; }
+.quiz-q .qn{ color:var(--blue-2); }
+.quiz-opts{ display:flex; flex-direction:column; gap:9px; }
+.quiz-opt{
+  font-family:var(--mono); font-size:12px; text-align:left; cursor:pointer;
+  border:1px solid var(--line); background:#0e1c37; color:var(--text);
+  padding:11px 13px; border-radius:9px; transition:.15s; display:flex; gap:10px; align-items:center;
+}
+.quiz-opt .lt{ color:var(--dim); }
+.quiz-opt:hover{ border-color:var(--blue); box-shadow:0 0 10px var(--blue-glow); }
+.quiz-opt.correct{ border-color:#20603f; background:#0e2a1e; color:var(--green-neon); }
+.quiz-opt.wrong{ border-color:#7f1d1d; background:#2a1220; color:#fca5a5; }
+.quiz-opt:disabled{ cursor:default; }
+.quiz-progress{ font-family:var(--mono); font-size:11px; color:var(--dim); margin-bottom:10px; }
+
+/* Zone completion splash */
+.zone-clear{
+  position:absolute; inset:0; z-index:5; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px; text-align:center;
+  background:radial-gradient(600px 400px at 50% 45%, #0e2a1eee, #0a132af5);
+  backdrop-filter:blur(3px);
+}
+.zone-clear .big{ font-family:var(--mono); font-size:20px; color:var(--green-neon); text-shadow:0 0 18px var(--green-glow); letter-spacing:1px; }
+.zone-clear .sub{ font-family:var(--mono); font-size:12px; color:var(--muted); max-width:320px; line-height:1.6; }
+.zone-clear .chk{ font-size:56px; filter:drop-shadow(0 0 18px var(--green-glow)); animation:pop .4s ease; }
+@keyframes pop{ 0%{ transform:scale(.3); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+
+/* =============================================================
+   RESUME PANE (RIGHT)
+   ============================================================= */
+.resume{ padding:20px 22px; font-size:13.5px; color:var(--text); }
+.resume-header{ display:flex; gap:16px; align-items:center; margin-bottom:14px; }
+.avatar{
+  width:78px; height:78px; flex:0 0 auto; border-radius:12px; overflow:hidden;
+  border:1px solid var(--blue); box-shadow:0 0 18px var(--blue-glow);
+  background:#0c1a35; display:grid; place-items:center;
+}
+.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.avatar .fallback{ font-family:var(--mono); font-weight:700; font-size:26px; color:var(--blue-2); }
+.resume-id h1{ font-size:22px; letter-spacing:.3px; color:#fff; line-height:1.15; }
+.resume-id .role{ font-family:var(--mono); font-size:12.5px; color:var(--blue-2); margin-top:3px; letter-spacing:.4px; }
+.resume-id .meta{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; }
+.chip{
+  font-family:var(--mono); font-size:10.5px; color:var(--muted);
+  border:1px solid var(--line); border-radius:20px; padding:3px 10px; background:#0c1830;
+  display:inline-flex; gap:6px; align-items:center;
+}
+.chip a{ color:var(--blue-2); text-decoration:none; }
+.chip a:hover{ text-decoration:underline; }
+
+.section{ margin-top:18px; position:relative; }
+.section > h2{
+  font-family:var(--mono); font-size:12px; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--blue-2); display:flex; align-items:center; gap:9px; margin-bottom:10px;
+}
+.section > h2::before{ content:"▸"; color:var(--dim); }
+.section > h2::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent); }
+
+/* Experience / education entries */
+.entry{ padding:11px 0; border-bottom:1px solid var(--line-soft); }
+.entry:last-child{ border-bottom:none; }
+.entry .e-top{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap; }
+.entry .e-org{ color:#fff; font-weight:600; font-size:14px; }
+.entry .e-date{ font-family:var(--mono); font-size:11px; color:var(--dim); white-space:nowrap; }
+.entry .e-role{ font-family:var(--mono); font-size:12px; color:var(--blue-2); margin:2px 0 6px; }
+.entry ul{ list-style:none; display:flex; flex-direction:column; gap:5px; }
+.entry ul li{ position:relative; padding-left:16px; color:var(--muted); font-size:12.5px; line-height:1.5; }
+.entry ul li::before{ content:"▪"; position:absolute; left:0; color:var(--blue); }
+.entry .achieve{ color:var(--green-neon); }
+.entry .achieve::before{ content:"★"; color:var(--green); }
+
+/* Skills */
+.skill-group{ margin-bottom:11px; }
+.skill-group .sg-label{ font-family:var(--mono); font-size:11px; color:var(--muted); margin-bottom:6px; }
+.tags{ display:flex; flex-wrap:wrap; gap:6px; }
+.tag{
+  font-family:var(--mono); font-size:11px; color:#cfe0ff;
+  border:1px solid var(--line); border-radius:6px; padding:3px 8px; background:#0e1c37;
+  transition:.15s;
+}
+.tag:hover{ border-color:var(--blue); box-shadow:0 0 9px var(--blue-glow); }
+
+.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:6px 22px; }
+@media (max-width:1180px){ .two-col{ grid-template-columns:1fr; } }
+
+/* Locked / encrypted blocks */
+.lock-wrap{ position:relative; }
+.lock-wrap.locked > .lock-content{ filter:blur(6px) saturate(.4); opacity:.35; pointer-events:none; user-select:none; }
+.lock-overlay{
+  position:absolute; inset:0; z-index:3; display:none;
+  flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center;
+  border:1px dashed #2a3c5e; border-radius:10px; background:#0b152bcc;
+}
+.lock-wrap.locked > .lock-overlay{ display:flex; }
+.lock-overlay .lk-ic{ font-size:26px; filter:drop-shadow(0 0 8px var(--blue-glow)); }
+.lock-overlay .lk-tt{ font-family:var(--mono); font-size:11px; color:var(--amber); letter-spacing:.5px; }
+.lock-overlay .lk-sub{ font-family:var(--mono); font-size:10.5px; color:var(--dim); }
+.lock-overlay .lk-go{ margin-top:4px; }
+
+/* reveal animation */
+@keyframes revealFlash{
+  0%{ box-shadow:0 0 0 var(--green-glow); background:#0e2a1e33; }
+  100%{ box-shadow:none; background:transparent; }
+}
+.section.revealed{ animation:revealFlash 1.1s ease; border-radius:10px; }
+
+/* Full-access banner */
+.access-banner{
+  display:none; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:12px; color:var(--green-neon);
+  border:1px solid #20603f; background:linear-gradient(90deg,#0e2a1e,#0c2018);
+  border-radius:9px; padding:10px 14px; margin-bottom:16px;
+  box-shadow:0 0 18px #22c55e22;
+}
+.access-banner.show{ display:flex; }
+.access-banner .pulse{ width:9px;height:9px;border-radius:50%; background:var(--green-neon); box-shadow:0 0 10px var(--green-glow); animation:blink 1.4s infinite; }
+
+/* Toast */
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+  z-index:60; opacity:0; pointer-events:none; transition:.3s;
+  font-family:var(--mono); font-size:12px; color:#fff;
+  background:#0d1c3a; border:1px solid var(--blue); border-radius:9px; padding:10px 16px;
+  box-shadow:0 0 22px var(--blue-glow);
+}
+#toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Confetti-ish final overlay */
+#final{
+  position:fixed; inset:0; z-index:55; display:none;
+  align-items:center; justify-content:center; padding:24px;
+  background:radial-gradient(700px 500px at 50% 40%, #0e2a1eE6, #0a1226f2);
+  backdrop-filter:blur(4px);
+}
+#final.show{ display:flex; }
+.final-card{
+  text-align:center; max-width:520px;
+  border:1px solid #20603f; border-radius:14px; padding:34px 30px;
+  background:linear-gradient(180deg,#0d2419,#0b1a13);
+  box-shadow:0 30px 80px #000a, 0 0 40px #22c55e33;
+}
+.final-card .fc-ic{ font-size:64px; filter:drop-shadow(0 0 22px var(--green-glow)); }
+.final-card h2{ font-family:var(--mono); color:var(--green-neon); margin-top:10px; letter-spacing:1px; text-shadow:0 0 16px var(--green-glow); }
+.final-card p{ color:var(--muted); font-family:var(--mono); font-size:12.5px; line-height:1.7; margin-top:12px; }
+.final-card .fc-actions{ margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
+@media (max-width:900px){
+  body{ overflow:auto; }
+  #app{ height:auto; min-height:100vh; }
+  main.split{ grid-template-columns:1fr; }
+  .pane{ min-height:70vh; }
+  .zone-grid{ grid-template-columns:1fr; }
+}
+@media (max-width:620px){
+  header.topbar{ flex-wrap:wrap; row-gap:8px; padding:9px 12px; }
+  .brand .title span{ display:none; }         /* drop subtitle to avoid crowding */
+  .topbar .spacer{ flex-basis:100%; order:5; height:0; } /* force controls to a new row */
+  .clearance{ order:6; }
+  .btn.bypass{ order:7; margin-left:auto; }
+  #muteBtn{ order:6; }
+}
+</style>
+</head>
+<body>
+
+<!-- Animated grid backdrop -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- ======================= BOOT SEQUENCE ======================= -->
+<div id="boot">
+  <div class="boot-card">
+    <div class="boot-titlebar">
+      <span class="tb-dot r"></span><span class="tb-dot y"></span><span class="tb-dot g"></span>
+      <span style="margin-left:8px">secure-shell — analyst@digitalrealty: ~/audit</span>
+      <span style="flex:1"></span>
+      <button class="boot-skip" id="bootSkip" title="Skip the intro and reveal the full CV">⏭ skip &amp; bypass</button>
+    </div>
+    <div class="boot-screen" id="bootScreen"></div>
+    <div class="boot-cta" id="bootCta">
+      <button class="btn primary big" id="startBtn">▶ INITIATE AUDIT</button>
+      <div class="hint">press <b>ENTER</b> to boot the audit environment</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= MAIN APP ======================= -->
+<div id="app" aria-hidden="true">
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" title="SecAudit">
+        <!-- shield SVG -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l7 3v6c0 4.5-3 8-7 11-4-3-7-6.5-7-11V5l7-3z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="title">
+        <b>SEC//AUDIT</b>
+        <span>Compliance &amp; Cyber Security Console</span>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="clearance" title="Security zones cleared">
+      <span>CLEARANCE</span>
+      <div class="dots" id="clearDots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <span id="clearCount">0/4</span>
+    </div>
+
+    <button class="btn ghost icon" id="muteBtn" title="Toggle sound">🔊</button>
+    <button class="btn bypass" id="bypassBtn" title="Skip the game and reveal the full CV">⏭ BYPASS · FULL RESUME</button>
+  </header>
+
+  <!-- Split panes -->
+  <main class="split">
+    <!-- LEFT: game -->
+    <section class="pane">
+      <div class="pane-head"><span class="led"></span> Interactive Audit Terminal</div>
+      <div class="pane-body">
+        <div class="game-wrap" id="gameWrap"><!-- map or challenge injected here --></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: resume -->
+    <section class="pane">
+      <div class="pane-head"><span class="led g"></span> Personnel Dossier · CV</div>
+      <div class="pane-body">
+        <div class="resume" id="resume"><!-- resume injected here --></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Toast + final overlay -->
+<div id="toast"></div>
+<div id="final">
+  <div class="final-card">
+    <div class="fc-ic">🛡️</div>
+    <h2>AUDIT COMPLETE — FULL CLEARANCE GRANTED</h2>
+    <p>All four security zones passed. Compliance status: <b style="color:var(--green-neon)">GREEN</b>.<br>
+       The complete personnel dossier is now decrypted on the right.</p>
+    <div class="fc-actions">
+      <button class="btn primary" id="finalClose">✓ REVIEW DOSSIER</button>
+      <button class="btn ghost" id="finalRestart">↻ REPLAY AUDIT</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =============================================================
+   THE COMPLIANCE & CYBER SECURITY AUDIT
+   Single-file interactive CV — Vanilla JS state machine
+   -------------------------------------------------------------
+   Author content: Corentin Bezille — Cyber & IT Control Compliance Analyst
+   ============================================================= */
+
+/* ------------------------------------------------------------------
+   0. CONFIG — profile picture path (local). Drop a photo named
+   "profile.jpg" next to this HTML file, or change PROFILE_IMG below.
+   A styled "CB" avatar is shown automatically if the image is missing.
+------------------------------------------------------------------- */
+const PROFILE_IMG   = "./profile.jpg";
+const PROFILE_EMAIL = "corentin.bezille1756@gmail.com";
+
+/* ------------------------------------------------------------------
+   1. GLOBAL STATE MACHINE
+------------------------------------------------------------------- */
+const State = {
+  screen: "boot",            // boot | map | challenge | done
+  selected: 0,               // highlighted zone on the map (keyboard nav)
+  activeZone: null,          // id of zone currently being played
+  cleared: { z1:false, z2:false, z3:false, z4:false },
+  bypassed: false,
+  muted: false,
+};
+
+/* Zone definitions. `reveal` lists the resume section ids each unlocks. */
+const ZONES = [
+  { id:"z1", icon:"🏢", title:"Data Center Infrastructure",
+    sub:"Digital Realty — 5 IDF data centers. Availability & SLA control.",
+    task:"TASK: Contain physical-logical incidents, hold SLA ≥ 90%.",
+    reveal:["sec-summary","sec-digitalrealty"] },
+  { id:"z2", icon:"🛡️", title:"The Domain Shield",
+    sub:"Entrepreneurship & Albys — DMARC / anti-spoofing operations.",
+    task:"TASK: Triage inbound mail, block spoofed senders.",
+    reveal:["sec-entrepreneur","sec-albys"] },
+  { id:"z3", icon:"🧪", title:"The R&D Lab",
+    sub:"Thales — storage resource monitoring & optimization.",
+    task:"TASK: Flag over-threshold volumes, run the optimizer.",
+    reveal:["sec-thales","sec-medline","sec-skills"] },
+  { id:"z4", icon:"🎓", title:"The Training Academy",
+    sub:"ESIEE-IT MSc Cybersecurity — pentest & OWASP mastery.",
+    task:"TASK: Pass the OWASP Top 10 / pentest exam.",
+    reveal:["sec-education","sec-soft","sec-languages"] },
+];
+
+/* Quick lookup */
+const zoneById = id => ZONES.find(z => z.id === id);
+
+/* ------------------------------------------------------------------
+   2. TINY SOUND ENGINE (WebAudio, self-contained, no assets)
+------------------------------------------------------------------- */
+const Sound = (() => {
+  let ctx = null;
+  const ensure = () => { if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); return ctx; };
+  function tone(freq, dur=0.09, type="square", vol=0.05){
+    if(State.muted) return;
+    try{
+      const c = ensure(); const o = c.createOscillator(); const g = c.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = vol; o.connect(g); g.connect(c.destination);
+      const t = c.currentTime;
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur);
+    }catch(e){/* audio not available */}
+  }
+  return {
+    click:()=>tone(520,0.05,"square",0.04),
+    good:()=>{ tone(660,0.08,"square",0.05); setTimeout(()=>tone(880,0.12,"square",0.05),80); },
+    bad:()=>tone(150,0.18,"sawtooth",0.05),
+    boot:()=>tone(300,0.06,"square",0.03),
+    win:()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.16,"triangle",0.06), i*110)); },
+  };
+})();
+
+/* ------------------------------------------------------------------
+   3. UTILITIES
+------------------------------------------------------------------- */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const el = (tag, cls, html) => { const n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; };
+const rand = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const shuffle = arr => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=rand(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+let toastTimer;
+function toast(msg){
+  const t = $("#toast"); t.innerHTML = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+/* ------------------------------------------------------------------
+   4. BACKGROUND CANVAS — subtle drifting data grid + code rain
+------------------------------------------------------------------- */
+(function bgCanvas(){
+  const cvs = $("#bg-canvas"); const ctx = cvs.getContext("2d");
+  let w, h, cols, drops, glyphs = "01<>/{}[]#$*+=ABCDEF0123456789";
+  function resize(){
+    w = cvs.width = window.innerWidth; h = cvs.height = window.innerHeight;
+    cols = Math.floor(w / 18);
+    drops = Array.from({length:cols}, () => rand(-40, 0));
+  }
+  window.addEventListener("resize", resize); resize();
+  let frame = 0;
+  function draw(){
+    frame++;
+    // fade trail
+    ctx.fillStyle = "rgba(15,23,42,0.10)";
+    ctx.fillRect(0,0,w,h);
+    // faint grid lines
+    if(frame % 2 === 0){
+      ctx.strokeStyle = "rgba(37,99,235,0.05)";
+      ctx.lineWidth = 1;
+      for(let x=0; x<w; x+=90){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for(let y=0; y<h; y+=90){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    }
+    // code rain (slow, sparse)
+    ctx.font = "13px monospace";
+    for(let i=0;i<cols;i++){
+      if(Math.random() > 0.975){
+        const ch = glyphs[rand(0,glyphs.length-1)];
+        const x = i*18, y = drops[i]*18;
+        ctx.fillStyle = Math.random() > 0.9 ? "rgba(74,222,128,0.45)" : "rgba(59,130,246,0.30)";
+        ctx.fillText(ch, x, y);
+      }
+      drops[i] += 0.5;
+      if(drops[i]*18 > h && Math.random() > 0.97) drops[i] = rand(-20,0);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ------------------------------------------------------------------
+   5. BOOT SEQUENCE (typewriter)
+------------------------------------------------------------------- */
+const BOOT_LINES = [
+  {t:"[ SecureOS v2.7.1 ] initializing audit environment...", c:""},
+  {t:"Loading kernel modules ........................ ", c:"", ok:"[ OK ]"},
+  {t:"Mounting encrypted volumes /dev/sda1 .......... ", c:"", ok:"[ OK ]"},
+  {t:"Starting IDS / EDR watchdog ................... ", c:"", ok:"[ OK ]"},
+  {t:"Negotiating VPN tunnel to core network ........ ", c:"", ok:"[ OK ]"},
+  {t:"Scanning perimeter firewalls (VLAN 10-40) ..... ", c:"", ok:"[ OK ]"},
+  {t:"Authenticating analyst credentials ............ ", c:"", warn:"[ 2FA ]"},
+  {t:"> ACCESS GRANTED", c:"grant"},
+  {t:" ", c:""},
+  {t:"Welcome, Analyst  ::  CocoBlues", c:"info"},
+  {t:"Target Role:", c:""},
+  {t:"Cyber & IT Control Compliance Analyst", c:"role"},
+  {t:" ", c:""},
+  {t:"4 security zones detected. Clear them to decrypt the dossier.", c:"info"},
+];
+
+function runBoot(){
+  const screen = $("#bootScreen");
+  screen.innerHTML = "";
+  let li = 0;
+  const cursor = el("span","cursor");
+
+  function typeLine(){
+    if(li >= BOOT_LINES.length){
+      $("#bootCta").classList.add("show");
+      screen.appendChild(cursor);
+      return;
+    }
+    const data = BOOT_LINES[li];
+    const line = el("div","ln");
+    if(data.c) line.classList.add(data.c);
+    screen.appendChild(line);
+    screen.appendChild(cursor);
+    let ci = 0; const txt = data.t;
+    (function typeChar(){
+      if(ci <= txt.length){
+        line.textContent = txt.slice(0, ci);
+        if(ci % 2 === 0) Sound.boot();
+        ci++;
+        setTimeout(typeChar, data.c==="role" ? 34 : 12);
+      } else {
+        if(data.ok){ const s=el("span","ok",data.ok); line.appendChild(s); }
+        if(data.warn){ const s=el("span","warn",data.warn); line.appendChild(s); }
+        li++;
+        setTimeout(typeLine, data.c==="grant" ? 260 : (data.t.trim()===""?60:90));
+      }
+    })();
+  }
+  typeLine();
+}
+
+/* ------------------------------------------------------------------
+   6. RESUME CONTENT (data-driven) + LOCK / REVEAL
+------------------------------------------------------------------- */
+/* Pixel-art avatar (hooded cyber-analyst) — built from a 16×16 char map,
+   emitted as crisp SVG rects so it needs no external image asset. */
+function pixelAvatar(){
+  const P = {
+    O:"#050f1f", // darkest outline
+    H:"#1c3d6b", // hood base
+    h:"#356bb0", // hood highlight
+    F:"#0a1a2f", // face shadow
+    E:"#16a34a", // eye glow (outer)
+    e:"#8affc0", // eye highlight
+    S:"#a9784f", // lower-face skin
+    C:"#152742", // hoodie body
+    c:"#0d1a2c", // hoodie shadow
+    B:"#2563eb"  // electric-blue drawstrings
+  };
+  const map = [
+    ".....OOOOOO.....",
+    "...OOHHHHHHOO...",
+    "..OHHHHHHHHHHO..",
+    ".OHHHhhhhhhHHHO.",
+    ".OHHhFFFFFFhHHO.",
+    "OHHhFFFFFFFFhHHO",
+    "OHHFFFFFFFFFFHHO",
+    "OHHFEeFFFFEeFHHO",
+    "OHHFEeFFFFEeFHHO",
+    "OHHFFFFFFFFFFHHO",
+    ".OHFFFSSSSFFFHO.",
+    ".OHHFFSSSSFFHHO.",
+    "..OHHFFFFFFHHO..",
+    "...CCCBCCBCCC...",
+    "..CCCCBCCBCCCC..",
+    ".CCcCCBCCBCCcCC."
+  ];
+  const cell = 8;
+  let rects = "";
+  map.forEach((row, y) => {
+    for(let x = 0; x < row.length; x++){
+      const c = P[row[x]];
+      if(c) rects += `<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" fill="${c}"/>`;
+    }
+  });
+  return `<svg viewBox="0 0 128 128" width="100%" height="100%" shape-rendering="crispEdges"
+    xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;display:block">${rects}</svg>`;
+}
+
+function renderResume(){
+  const r = $("#resume");
+  r.innerHTML = `
+    <div class="access-banner" id="accessBanner">
+      <span class="pulse"></span> FULL ACCESS GRANTED — all dossier sections decrypted.
+    </div>
+
+    <div class="resume-header">
+      <div class="avatar">
+        <!-- Pixel-art avatar is the default dossier picture. If a real photo at
+             PROFILE_IMG loads, it takes over; otherwise the pixel art stays. -->
+        <div class="fallback" id="pixelAvatar" style="width:100%;height:100%">${pixelAvatar()}</div>
+        <img id="avatarImg" src="${PROFILE_IMG}" alt="Corentin Bezille" style="display:none"
+             onload="this.style.display='block';var p=document.getElementById('pixelAvatar');if(p)p.style.display='none';"
+             onerror="this.remove();">
+      </div>
+      <div class="resume-id">
+        <h1>Corentin Bezille</h1>
+        <div class="role">Cyber &amp; IT Control Compliance Analyst</div>
+        <div class="meta">
+          <span class="chip">📧 <a href="mailto:${PROFILE_EMAIL}">${PROFILE_EMAIL}</a></span>
+          <span class="chip">🚗 Driving License &amp; Vehicle</span>
+          <span class="chip">🎯 TryHackMe: <a href="https://tryhackme.com/p/CocoBlues" target="_blank" rel="noopener noreferrer">CocoBlues</a></span>
+          <span class="chip">🌐 FR native · EN TOEIC 875</span>
+        </div>
+      </div>
+    </div>
+
+    ${section("sec-summary","Professional Summary","z1", `
+      <p style="color:var(--muted);line-height:1.7;font-size:13px">
+        Highly motivated, technically skilled cybersecurity professional with an advanced background in
+        <b style="color:#cfe0ff">network security</b>, <b style="color:#cfe0ff">system administration</b>, and
+        <b style="color:#cfe0ff">physical-logical infrastructure coordination</b>. Recognized champion of the
+        <b style="color:var(--green-neon)">Digital Realty Cybersecurity Month 2025 Challenge</b>, with a solid grasp of
+        risk management, vulnerability assessments, OWASP Top 10, and ISO 27001 compliance. Seeking to leverage
+        cross-functional management experience to transition into the Cyber &amp; IT Control Compliance Analyst role.
+      </p>`)}
+
+    ${section("sec-digitalrealty","Experience · Data Center","z1", entry(
+      "Digital Realty","Security Technical Coordinator","Feb 2025 – Present", [
+        "Supervise access control &amp; CCTV operations across 5 major data centers in the Île-de-France region, coordinating cross-functional services and external vendors.",
+        "Ensure maximum availability of technical security systems in strict alignment with defined Service Level Agreements (SLAs).",
+        "Coordinate incident response, troubleshooting workflows and technical escalation with local Security &amp; STAT teams.",
+        "Maintain precise security records, analyze operational logs, and report flaws / compliance risks to security management.",
+        {a:true, t:"Key Achievement: 1st place — Digital Realty Cybersecurity Month 2025 Challenge."}
+      ]))}
+
+    ${section("sec-entrepreneur","Experience · Domain Security","z2", entry(
+      "Entrepreneurship","Cybersecurity &amp; DMARC Tool Developer","2023 – 2025", [
+        "Engineered a custom on-premise domain security &amp; DMARC monitoring solution: analyzes authentication reports, manages DNS records and triggers automated anti-spoofing alerts.",
+        "Conducted structural studies &amp; risk modeling to migrate the monitoring tool toward a secure cloud-based SaaS model.",
+        "Developed an automated script using the ChatGPT API to parse, summarize and monitor daily global cyber threat-intelligence feeds."
+      ]))}
+
+    ${section("sec-albys","Experience · Network &amp; Anti-Spoofing","z2", entry(
+      "Albys","System &amp; Network Administrator (Apprentice)","2021 – 2023", [
+        "Redesigned the corporate network architecture from the ground up on Ubiquiti infrastructure — secure VLANs, VPNs and firewalls.",
+        "Led a domain anti-spoofing compliance initiative: drafted security guidelines, built a proof-of-concept spoofing simulator, and deployed a DMARC monitoring dashboard.",
+        "Orchestrated vulnerability scanning campaigns with OpenVAS and designed simulated phishing exercises via Gophish.",
+        "Audited the Malwarebytes EDR deployment and authored Technical Architecture Documents (DAT)."
+      ]))}
+
+    ${section("sec-thales","Experience · R&D","z3", entry(
+      "Thales","Software R&D Apprentice","2020 – 2021", [
+        "Built a centralized storage-resource tracking solution in Python to optimize space analysis.",
+        "Designed an interactive dashboard with dynamic graphical monitoring of storage volumes."
+      ]))}
+
+    ${section("sec-medline","Experience · IT Support","z3", entry(
+      "Medline","IT Support Technician Apprentice","2018 – 2020", [
+        "Provided hardware, network and software troubleshooting to corporate end-users."
+      ]))}
+
+    ${section("sec-skills","Core Skills","z3", skillsBlock())}
+
+    ${section("sec-education","Education &amp; Certifications","z4", educationBlock())}
+
+    ${section("sec-soft","Soft Skills &amp; Interests","z4", softBlock())}
+
+    ${section("sec-languages","Languages","z4", `
+      <div class="tags">
+        <span class="tag">🇫🇷 French — Native</span>
+        <span class="tag">🇬🇧 English — Professional (TOEIC 875)</span>
+      </div>`)}
+  `;
+  // Re-apply lock state (in case of re-render)
+  Object.keys(State.cleared).forEach(z => { if(State.cleared[z]) unlockZoneSections(z, false); });
+  if(State.bypassed) revealAll(false);
+}
+
+/* Build a lockable section wrapper */
+function section(id, title, zoneId, inner){
+  const zone = zoneById(zoneId);
+  return `
+  <div class="section lock-wrap locked" id="${id}" data-zone="${zoneId}">
+    <div class="lock-content">
+      <h2>${title}</h2>
+      ${inner}
+    </div>
+    <div class="lock-overlay">
+      <div class="lk-ic">🔒</div>
+      <div class="lk-tt">[ ENCRYPTED ]</div>
+      <div class="lk-sub">Clear “${zone.title}” to decrypt</div>
+      <button class="btn primary lk-go" data-goto="${zoneId}">▶ Go to Zone ${zoneId.slice(1)}</button>
+    </div>
+  </div>`;
+}
+
+/* Build an experience/education entry */
+function entry(org, role, date, bullets){
+  const li = bullets.map(b => {
+    if(typeof b === "object" && b.a) return `<li class="achieve">${b.t}</li>`;
+    return `<li>${b}</li>`;
+  }).join("");
+  return `
+  <div class="entry">
+    <div class="e-top"><span class="e-org">${org}</span><span class="e-date">${date}</span></div>
+    <div class="e-role">${role}</div>
+    <ul>${li}</ul>
+  </div>`;
+}
+
+function skillsBlock(){
+  const groups = [
+    ["Cybersecurity &amp; Compliance", ["Risk Assessment","ISO 27001 (notions)","OpenVAS","Phishing Simulations","EDR Auditing","SLA Compliance"]],
+    ["Pentest &amp; Web Security", ["OWASP Top 10","Burp Suite","Email Spoofing","Privilege Escalation","XSS","SQL Injection","Reverse Shells","Brute Force"]],
+    ["Systems &amp; Network", ["Linux","Windows Server","Active Directory","Cisco","Ubiquiti / Unifi","Firewalls","VPN","VLAN"]],
+    ["Tools · AI · Agentic AI", ["VMware Workstation Pro","GLPI","Git/GitHub","Claude Opus","OpenClaw","GPT","Gemini","Mistral","Ollama"]],
+    ["Programming &amp; Scripting", ["Python","Bash","PowerShell","Go","C","C#","SQL","MariaDB","PHP","HTML/CSS"]],
+  ];
+  return groups.map(([label, tags]) => `
+    <div class="skill-group">
+      <div class="sg-label">${label}</div>
+      <div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    </div>`).join("");
+}
+
+function educationBlock(){
+  const items = [
+    ["ESIEE-IT","Master’s Degree in Computer Engineering — MSc Cybersecurity","2021 – 2023",
+      ["ANSSI SecNumEdu certified program.","Core: Risk Management, BCP/DRP, Computer Forensics, Penetration Testing."]],
+    ["ESIEE-IT","Bachelor’s — General Computer Science (Cybersecurity Option)","2020 – 2021",
+      ["Project management: Agile &amp; V-Model frameworks."]],
+    ["ESIEE-IT","BTS SIO (Option SISR) — Network &amp; System Administration","2018 – 2020",
+      ["Two-year work-study: infrastructure, systems administration &amp; network security."]],
+  ];
+  return items.map(([org,role,date,b]) => entry(org, role, date, b)).join("");
+}
+
+function softBlock(){
+  return `
+  <div class="two-col">
+    <div class="skill-group">
+      <div class="sg-label">Soft Skills</div>
+      <div class="tags">
+        <span class="tag">Cross-functional mgmt</span><span class="tag">Attention to detail</span>
+        <span class="tag">Proactive risk mindset</span><span class="tag">Autonomy</span>
+        <span class="tag">Team collaboration</span><span class="tag">Confidentiality</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="sg-label">Interests</div>
+      <div class="tags">
+        <span class="tag">🛡️ Ethical hacking</span><span class="tag">🤖 AI applications</span>
+        <span class="tag">🤾 Handball — 9 yrs / coaching</span><span class="tag">🏎️ Track driving</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Reveal helpers ---------------------------------------------------- */
+function unlockZoneSections(zoneId, animate=true){
+  const zone = zoneById(zoneId);
+  zone.reveal.forEach(id => {
+    const sec = document.getElementById(id);
+    if(sec && sec.classList.contains("locked")){
+      sec.classList.remove("locked");
+      if(animate){
+        sec.classList.add("revealed");
+        sec.scrollIntoView({behavior:"smooth", block:"center"});
+        setTimeout(()=>sec.classList.remove("revealed"), 1200);
+      }
+    }
+  });
+}
+
+function revealAll(animate=true){
+  $$(".section.lock-wrap").forEach(sec => {
+    if(sec.classList.contains("locked")){
+      sec.classList.remove("locked");
+      if(animate){ sec.classList.add("revealed"); setTimeout(()=>sec.classList.remove("revealed"),1200); }
+    }
+  });
+  $("#accessBanner").classList.add("show");
+}
+
+/* ------------------------------------------------------------------
+   7. CLEARANCE HUD
+------------------------------------------------------------------- */
+function updateClearance(){
+  const n = Object.values(State.cleared).filter(Boolean).length;
+  $$("#clearDots .dot").forEach((d,i)=> d.classList.toggle("on", i < n));
+  $("#clearCount").textContent = `${n}/4`;
+  return n;
+}
+
+/* ------------------------------------------------------------------
+   8. MAP VIEW
+------------------------------------------------------------------- */
+function renderMap(){
+  State.screen = "map"; State.activeZone = null;
+  const wrap = $("#gameWrap");
+  wrap.innerHTML = `
+    <div class="mission-intro">
+      <b>&gt; MISSION:</b> Explore the four security zones. Complete each micro-challenge to
+      decrypt the matching dossier section on the right. Use <b>WASD / Arrows</b> to move, <b>Enter</b> to open,
+      or simply click a node.
+    </div>
+    <div class="zone-grid" id="zoneGrid"></div>
+    <div class="map-help">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> navigate ·
+      <kbd>1</kbd>-<kbd>4</kbd> jump · <kbd>Enter</kbd> enter zone
+    </div>`;
+  const grid = $("#zoneGrid");
+  ZONES.forEach((z, i) => {
+    const done = State.cleared[z.id];
+    const card = el("div", "zone-card" + (done?" done":"") + (i===State.selected?" sel":""));
+    card.dataset.zone = z.id; card.dataset.index = i;
+    card.innerHTML = `
+      <span class="zc-key">// zone_${i+1}</span>
+      <div class="zc-top" style="margin-top:14px">
+        <span class="zc-icon">${z.icon}</span>
+        <span class="zc-status">${done? "✔ CLEARED" : "◉ ALERT"}</span>
+      </div>
+      <div class="zc-title">${z.title}</div>
+      <div class="zc-sub">${z.sub}</div>
+      <div class="zc-task">${done ? "STATUS: <b>Section decrypted.</b> Re-run available." : z.task}</div>`;
+    card.addEventListener("click", ()=>{ State.selected=i; Sound.click(); openZone(z.id); });
+    card.addEventListener("mouseenter", ()=>{ State.selected=i; syncSelection(); });
+    grid.appendChild(card);
+  });
+}
+
+function syncSelection(){
+  $$("#zoneGrid .zone-card").forEach((c,i)=> c.classList.toggle("sel", i===State.selected));
+}
+
+/* ------------------------------------------------------------------
+   9. CHALLENGE FRAMEWORK
+------------------------------------------------------------------- */
+/* A challenge with running timers registers a teardown here so that
+   Reset / Back / switching zones can never leave stray intervals alive. */
+let activeChallengeStop = null;
+function teardownChallenge(){ if(activeChallengeStop){ activeChallengeStop(); activeChallengeStop = null; } }
+
+function openZone(zoneId){
+  teardownChallenge();
+  const zone = zoneById(zoneId);
+  State.screen = "challenge"; State.activeZone = zoneId;
+  const wrap = $("#gameWrap");
+  wrap.innerHTML = `
+    <div class="challenge">
+      <div class="ch-head">
+        <span class="ch-ic">${zone.icon}</span>
+        <div class="ch-tt">${zone.title}<small>ZONE ${zoneId.slice(1)} · SECURITY CHALLENGE</small></div>
+        <button class="btn ghost" id="backBtn">← MAP</button>
+      </div>
+      <div class="ch-desc" id="chDesc"></div>
+      <div class="ch-stage" id="chStage"></div>
+      <div class="ch-foot">
+        <div class="status" id="chStatus">Awaiting input…</div>
+        <button class="btn" id="chReset">↻ Reset</button>
+      </div>
+    </div>`;
+  $("#backBtn").addEventListener("click", ()=>{ teardownChallenge(); Sound.click(); renderMap(); });
+  const launch = {z1:challengeDataCenter, z2:challengeDMARC, z3:challengeStorage, z4:challengeOWASP}[zoneId];
+  const boot = () => { teardownChallenge(); launch(); };
+  $("#chReset").addEventListener("click", ()=>{ Sound.click(); boot(); });
+  boot();
+}
+
+/* Mark a zone cleared + reveal + maybe finish */
+function completeZone(zoneId){
+  const stage = $("#chStage");
+  const zone = zoneById(zoneId);
+  const already = State.cleared[zoneId];
+  State.cleared[zoneId] = true;
+  Sound.win();
+  updateClearance();
+  unlockZoneSections(zoneId, true);
+
+  // success splash over the stage
+  const splash = el("div","zone-clear");
+  splash.innerHTML = `
+    <div class="chk">✅</div>
+    <div class="big">ZONE ${zoneId.slice(1)} SECURED</div>
+    <div class="sub">Compliance check passed. Dossier section “${zone.title}” decrypted →</div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn primary" id="splashNext">▶ Next zone</button>
+      <button class="btn ghost" id="splashMap">◱ Zone map</button>
+    </div>`;
+  stage.appendChild(splash);
+  $("#chStatus").className = "status good";
+  $("#chStatus").textContent = "✔ Challenge complete — section unlocked.";
+
+  const goNext = () => {
+    const next = ZONES.find(z => !State.cleared[z.id]);
+    if(next){ State.selected = ZONES.indexOf(next); openZone(next.id); }
+    else renderMap();
+  };
+  $("#splashNext").addEventListener("click", ()=>{ Sound.click(); goNext(); });
+  $("#splashMap").addEventListener("click", ()=>{ Sound.click(); renderMap(); });
+
+  // All four done → final overlay
+  if(updateClearance() === 4 && !already){
+    setTimeout(()=>{ $("#final").classList.add("show"); }, 900);
+  }
+}
+
+/* small helper to set the footer status line */
+function setStatus(txt, kind=""){
+  const s = $("#chStatus"); if(!s) return;
+  s.className = "status" + (kind?(" "+kind):""); s.innerHTML = txt;
+}
+
+/* =========================================================
+   ZONE 1 — DATA CENTER: incident response grid
+   Resolve alerts across 5 nodes while holding SLA >= 90%.
+   ========================================================= */
+function challengeDataCenter(){
+  $("#chDesc").innerHTML = `<b>&gt; INCIDENT RESPONSE:</b> Alerts are firing across the IDF data centers.
+    Click a <b style="color:#fca5a5">red</b> node to dispatch a response and clear it. Each unresolved alert drains the
+    <b>SLA</b>. Resolve <b>6</b> incidents while keeping SLA ≥ 90%.`;
+  const stage = $("#chStage");
+  const NAMES = ["PAR-DC1","PAR-DC2","PAR-DC3","IDF-DC4","IDF-DC5"];
+  let sla = 100, resolved = 0, target = 6, running = false;
+
+  stage.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:var(--mono);font-size:12px">
+      <span>SLA AVAILABILITY <b id="slaVal" style="color:var(--green-neon)">100.0%</b></span>
+      <span>RESOLVED <b id="resVal" style="color:var(--blue-2)">0/${target}</b></span>
+    </div>
+    <div class="meter" id="slaMeter"><i style="width:100%"></i></div>
+    <div class="dc-grid" id="dcGrid" style="margin-top:14px"></div>`;
+  const grid = $("#dcGrid");
+  const nodes = NAMES.map((nm,i)=>{
+    const n = el("div","dc-node");
+    n.innerHTML = `<div class="rack">🖥️</div><div class="nm">${nm}</div><div class="st">ONLINE</div>`;
+    n.addEventListener("click", ()=> resolveNode(i));
+    grid.appendChild(n);
+    return {nm, elm:n, alert:false};
+  });
+
+  function setSla(v){
+    sla = Math.max(0, Math.min(100, v));
+    $("#slaVal").textContent = sla.toFixed(1)+"%";
+    const m = $("#slaMeter"); m.querySelector("i").style.width = sla+"%";
+    m.className = "meter" + (sla<90?" danger": sla<95?" warn":"");
+    $("#slaVal").style.color = sla<90 ? "#fca5a5" : sla<95 ? "var(--amber)" : "var(--green-neon)";
+  }
+  function raiseAlert(){
+    const calm = nodes.filter(n=>!n.alert);
+    if(!calm.length) return;
+    const n = calm[rand(0,calm.length-1)];
+    n.alert = true; n.elm.classList.add("alert");
+    n.elm.querySelector(".st").textContent = "⚠ BREACH";
+    n.elm.querySelector(".rack").textContent = "🚨";
+  }
+  function resolveNode(i){
+    if(!running) return;
+    const n = nodes[i];
+    if(!n.alert){ Sound.bad(); setStatus("Node "+n.nm+" is nominal — nothing to resolve.","bad"); return; }
+    n.alert = false; n.elm.classList.remove("alert"); n.elm.classList.add("resolved");
+    n.elm.querySelector(".st").textContent = "SECURED"; n.elm.querySelector(".rack").textContent = "🖥️";
+    setTimeout(()=>n.elm.classList.remove("resolved"),500);
+    resolved++; Sound.good();
+    setSla(Math.min(100, sla + 3)); // recovery on fix
+    $("#resVal").textContent = resolved+"/"+target;
+    setStatus("Incident on "+n.nm+" contained. ("+resolved+"/"+target+")","good");
+    if(resolved >= target){ finish(true); }
+  }
+  // game loops — created only when the player presses START, so the briefing
+  // can be read without the SLA draining during a cold-start pile-up.
+  let spawn = null, drain = null;
+  function startLoops(){
+    if(running) return;
+    running = true;
+    activeChallengeStop = stopLoops; // allow Reset/Back to kill these timers
+    setStatus("Monitoring live infrastructure… keep availability above 90%.","");
+    raiseAlert(); // first incident on demand
+    // tuned so attentive play pins SLA near 100; only pile-ups fail you
+    spawn = setInterval(()=>{ if(running) raiseAlert(); }, 1600);
+    drain = setInterval(()=>{
+      if(!running) return;
+      const active = nodes.filter(n=>n.alert).length;
+      if(active) setSla(sla - active*0.35);
+      if(sla <= 89.9){ finish(false); }
+    }, 1000);
+  }
+  function stopLoops(){ running=false; clearInterval(spawn); clearInterval(drain); activeChallengeStop=null; }
+
+  function finish(win){
+    stopLoops();
+    if(win){ completeZone("z1"); }
+    else {
+      Sound.bad();
+      showStart("✖ SLA BREACH", "Availability fell below 90%. Reset and try again — click red nodes faster.", "↻ Retry");
+      setStatus("✖ SLA breach! Availability fell below 90%.","bad");
+    }
+  }
+
+  // "Get ready" gate overlay
+  function showStart(title, sub, label){
+    const ov = el("div","zone-clear");
+    ov.style.background = "radial-gradient(600px 400px at 50% 45%, #0d1c3aee, #0a132af5)";
+    ov.innerHTML = `
+      <div class="chk" style="filter:drop-shadow(0 0 18px var(--blue-glow))">🛰️</div>
+      <div class="big" style="color:#fff">${title}</div>
+      <div class="sub">${sub}</div>
+      <button class="btn primary" id="dcStart" style="margin-top:6px">${label}</button>`;
+    stage.appendChild(ov);
+    $("#dcStart").addEventListener("click", ()=>{ Sound.click(); ov.remove(); startLoops(); });
+  }
+
+  setStatus("Press START when you are ready to begin the shift.","");
+  showStart("INCIDENT RESPONSE SHIFT", "Alerts will fire across the IDF data centers. Click every red node to contain it and hold SLA ≥ 90%.", "▶ START MONITORING");
+}
+
+/* =========================================================
+   ZONE 2 — DOMAIN SHIELD: DMARC / spoofing triage
+   Classify inbound mail as ALLOW (SPF+DKIM pass, aligned)
+   or BLOCK (any auth failure / lookalike domain).
+   ========================================================= */
+function challengeDMARC(){
+  $("#chDesc").innerHTML = `<b>&gt; DMARC ENFORCEMENT:</b> Inbound mail is hitting the gateway. A message is legitimate only
+    if <b>SPF</b> and <b>DKIM</b> both <b style="color:var(--green-neon)">PASS</b> <i>and</i> the sending domain is aligned.
+    Anything spoofed must be blocked. Score <b>5 / 6</b> to enforce policy.`;
+  const stage = $("#chStage");
+
+  // emails: legit true = should ALLOW
+  const POOL = [
+    {from:"noreply@digitalrealty.com", subj:"Monthly SLA report",       spf:true,  dkim:true,  legit:true },
+    {from:"it-support@a1bys.com",       subj:"Password reset required",   spf:false, dkim:true,  legit:false, note:"look-alike domain (a1bys vs albys)"},
+    {from:"secteam@thalesgroup.com",    subj:"R&D storage metrics",       spf:true,  dkim:true,  legit:true },
+    {from:"billing@digitairealty.com",  subj:"URGENT invoice — pay now",  spf:false, dkim:false, legit:false, note:"homoglyph spoof (digitairealty)"},
+    {from:"hr@esiee-it.fr",             subj:"Diploma confirmation",      spf:true,  dkim:true,  legit:true },
+    {from:"admin@digitalrealty.com",    subj:"Wire transfer instructions",spf:true,  dkim:false, legit:false, note:"DKIM failed → unsigned"},
+    {from:"ceo@digitalrealty-secure.co",subj:"Confidential request",      spf:false, dkim:false, legit:false, note:"unknown external domain"},
+    {from:"alerts@openvas.local",       subj:"Vulnerability scan done",   spf:true,  dkim:true,  legit:true },
+  ];
+  const queue = shuffle(POOL).slice(0,6);
+  let idx = 0, score = 0, need = 5;
+
+  stage.innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-bottom:10px">
+      <span>MAIL <b id="mailIdx" style="color:var(--blue-2)">1/6</b></span>
+      <span>CORRECT <b id="mailScore" style="color:var(--green-neon)">0</b> / need ${need}</span>
+    </div>
+    <div id="mailHost"></div>`;
+
+  function render(){
+    const host = $("#mailHost");
+    if(idx >= queue.length){ return evaluate(); }
+    const m = queue[idx];
+    $("#mailIdx").textContent = (idx+1)+"/"+queue.length;
+    host.innerHTML = `
+      <div class="mail-card">
+        <div class="mail-row"><span class="k">FROM</span><span class="v">${m.from}</span></div>
+        <div class="mail-row"><span class="k">SUBJECT</span><span class="v">${m.subj}</span></div>
+        <div class="auth-badges">
+          <span class="auth-badge ${m.spf?"pass":"fail"}">SPF ${m.spf?"PASS":"FAIL"}</span>
+          <span class="auth-badge ${m.dkim?"pass":"fail"}">DKIM ${m.dkim?"PASS":"FAIL"}</span>
+          <span class="auth-badge ${(m.spf&&m.dkim)?"pass":"fail"}">DMARC ${(m.spf&&m.dkim)?"aligned":"unaligned"}</span>
+        </div>
+        <div class="mail-actions">
+          <button class="btn block" id="doBlock">🛡 BLOCK / QUARANTINE</button>
+          <button class="btn allow" id="doAllow">✓ ALLOW</button>
+        </div>
+        <div class="mail-verdict" id="verdict"></div>
+      </div>`;
+    $("#doAllow").addEventListener("click", ()=>decide(true));
+    $("#doBlock").addEventListener("click", ()=>decide(false));
+  }
+  function decide(allow){
+    const m = queue[idx];
+    const correct = (allow === m.legit);
+    const v = $("#verdict");
+    $("#doAllow").disabled = $("#doBlock").disabled = true;
+    if(correct){
+      score++; Sound.good();
+      v.style.color = "var(--green-neon)";
+      v.textContent = "✔ Correct — " + (m.legit ? "authenticated & aligned." : "spoof blocked" + (m.note?" · "+m.note:"") + ".");
+    } else {
+      Sound.bad();
+      v.style.color = "#fca5a5";
+      v.textContent = "✖ Wrong — " + (m.legit ? "this was a legitimate sender." : "spoof slipped through" + (m.note?" · "+m.note:"") + ".");
+    }
+    $("#mailScore").textContent = score;
+    setStatus((correct?"✔ Correct triage":"✖ Misclassified")+" ("+score+"/"+queue.length+")", correct?"good":"bad");
+    idx++;
+    setTimeout(render, 950);
+  }
+  function evaluate(){
+    if(score >= need){ completeZone("z2"); }
+    else {
+      Sound.bad();
+      $("#mailHost").innerHTML = `<div class="mail-card" style="text-align:center">
+        <div style="font-size:34px">📭</div>
+        <div style="font-family:var(--mono);color:#fca5a5;font-size:13px">Policy not enforced — ${score}/${queue.length}. Need ${need}.</div>
+        <div style="font-family:var(--mono);color:var(--dim);font-size:11px">Tip: a message needs SPF <b>and</b> DKIM to pass, from an aligned domain.</div>
+        <button class="btn primary" id="retryDmarc" style="align-self:center;margin-top:6px">↻ Re-run triage</button>
+      </div>`;
+      $("#retryDmarc").addEventListener("click", ()=>{ Sound.click(); challengeDMARC(); });
+      setStatus("✖ Enforcement failed. Re-run the triage.","bad");
+    }
+  }
+  setStatus("Inspect SPF / DKIM / alignment, then ALLOW or BLOCK.","");
+  render();
+}
+
+/* =========================================================
+   ZONE 3 — R&D LAB: storage monitor optimization
+   Select exactly the volumes over the 90% SLA threshold,
+   then run the optimizer (mirrors Thales Python dashboard).
+   ========================================================= */
+function challengeStorage(){
+  $("#chDesc").innerHTML = `<b>&gt; STORAGE OPTIMIZER:</b> Your Python monitoring script flagged the array. Select
+    <b>every</b> volume exceeding the <b>90%</b> capacity threshold (and only those), then
+    <b>run the optimization script</b> to archive cold data.`;
+  const stage = $("#chStage");
+  const VOLS = ["/vol/prod-01","/vol/prod-02","/vol/backup","/vol/logs","/vol/archive","/vol/db-cluster","/vol/vmstore"];
+  // ensure a good mix around threshold
+  const data = VOLS.map(name => ({ name, pct: rand(35, 99) }));
+  // guarantee at least 2 over-threshold and at least 2 under
+  data[0].pct = rand(91,99); data[1].pct = rand(92,99);
+  data[3].pct = rand(40,70); data[4].pct = rand(30,60);
+  const THRESH = 90;
+
+  stage.innerHTML = `
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">
+      $ python3 storage_monitor.py --threshold ${THRESH}
+    </div>
+    <div id="volHost"></div>
+    <button class="btn primary" id="runOpt" style="margin-top:14px;width:100%;justify-content:center">▶ RUN OPTIMIZATION SCRIPT</button>`;
+
+  const host = $("#volHost");
+  const picks = new Set();
+  data.forEach((v,i)=>{
+    const over = v.pct > THRESH;
+    const row = el("div","vol"+(over?" over":""));
+    row.innerHTML = `
+      <span class="vsel">✚</span>
+      <span class="vname">${v.name}</span>
+      <span class="vbar"><span class="meter ${v.pct>90?"danger":v.pct>75?"warn":""}"><i style="width:${v.pct}%"></i></span></span>
+      <span class="vpct" style="color:${over?"#fca5a5":"var(--muted)"}">${v.pct}%</span>`;
+    row.addEventListener("click", ()=>{
+      Sound.click();
+      if(picks.has(i)){ picks.delete(i); row.classList.remove("picked"); }
+      else { picks.add(i); row.classList.add("picked"); }
+      setStatus(picks.size+" volume(s) selected for optimization.","");
+    });
+    host.appendChild(row);
+  });
+
+  $("#runOpt").addEventListener("click", ()=>{
+    const shouldPick = new Set(data.map((v,i)=>v.pct>THRESH?i:-1).filter(i=>i>=0));
+    const missed = [...shouldPick].filter(i=>!picks.has(i));
+    const wrong  = [...picks].filter(i=>!shouldPick.has(i));
+    if(missed.length===0 && wrong.length===0 && picks.size>0){
+      // animate optimization
+      data.forEach((v,i)=>{ if(shouldPick.has(i)){
+        const row = host.children[i];
+        v.pct = rand(48,68);
+        row.classList.remove("over");
+        row.querySelector(".meter").className = "meter";
+        row.querySelector(".meter i").style.width = v.pct+"%";
+        const p = row.querySelector(".vpct"); p.textContent = v.pct+"%"; p.style.color="var(--green-neon)";
+      }});
+      completeZone("z3");
+    } else {
+      Sound.bad();
+      let msg = "✖ Optimization rejected — ";
+      if(missed.length) msg += missed.length+" over-threshold volume(s) not selected. ";
+      if(wrong.length)  msg += wrong.length+" healthy volume(s) wrongly selected. ";
+      if(picks.size===0) msg = "✖ Select the volumes above 90% first.";
+      setStatus(msg,"bad");
+    }
+  });
+  setStatus("Select volumes above "+THRESH+"%, then run the script.","");
+}
+
+/* =========================================================
+   ZONE 4 — TRAINING ACADEMY: OWASP / pentest exam
+   3 questions, need all 3 correct (retry on miss).
+   ========================================================= */
+function challengeOWASP(){
+  $("#chDesc").innerHTML = `<b>&gt; CERTIFICATION EXAM:</b> Prove your OWASP Top 10 &amp; pentest knowledge.
+    Answer all <b>3</b> questions correctly to earn clearance.`;
+  const stage = $("#chStage");
+  const QUESTIONS = shuffle([
+    { q:"Which OWASP Top 10 category covers SQL Injection and Cross-Site Scripting (XSS)?",
+      opts:["Injection","Security Misconfiguration","Broken Access Control","Cryptographic Failures"], a:0 },
+    { q:"A DMARC policy of <b>p=reject</b> instructs receiving mail servers to…",
+      opts:["Deliver but tag the message","Quarantine to spam","Reject unauthenticated mail outright","Ignore SPF results"], a:2 },
+    { q:"During a web pentest, which tool intercepts and modifies HTTP requests in real time?",
+      opts:["Wireshark","Burp Suite","Nmap","OpenVAS"], a:1 },
+    { q:"Gaining root/admin from a lower-privileged account is best described as…",
+      opts:["Lateral movement","Privilege escalation","Reconnaissance","Data exfiltration"], a:1 },
+    { q:"Which vulnerability class does input sanitization &amp; parameterized queries primarily defend against?",
+      opts:["Brute force","Injection (SQLi/XSS)","DDoS","Physical tampering"], a:1 },
+  ]).slice(0,3);
+
+  let qi = 0, correct = 0;
+
+  function render(){
+    if(qi >= QUESTIONS.length) return evaluate();
+    const item = QUESTIONS[qi];
+    const opts = shuffle(item.opts.map((t,i)=>({t, ok:i===item.a})));
+    stage.innerHTML = `
+      <div class="quiz-progress">EXAM PROGRESS — Question ${qi+1} of ${QUESTIONS.length} · score ${correct}</div>
+      <div class="quiz-q"><span class="qn">Q${qi+1}.</span> ${item.q}</div>
+      <div class="quiz-opts" id="opts"></div>`;
+    const host = $("#opts");
+    const letters = ["A","B","C","D"];
+    opts.forEach((o,i)=>{
+      const b = el("button","quiz-opt");
+      b.innerHTML = `<span class="lt">${letters[i]}.</span> <span>${o.t}</span>`;
+      b.addEventListener("click", ()=>answer(b, o.ok, host));
+      host.appendChild(b);
+    });
+  }
+  function answer(btn, ok, host){
+    $$(".quiz-opt", host).forEach(b=>b.disabled=true);
+    if(ok){
+      btn.classList.add("correct"); correct++; Sound.good();
+      setStatus("✔ Correct.","good");
+    } else {
+      btn.classList.add("wrong"); Sound.bad();
+      // reveal the right one
+      $$(".quiz-opt", host).forEach(b=>{ if(b.querySelector("span:last-child").textContent === QUESTIONS[qi].opts[QUESTIONS[qi].a]) b.classList.add("correct"); });
+      setStatus("✖ Incorrect.","bad");
+    }
+    qi++;
+    setTimeout(render, 950);
+  }
+  function evaluate(){
+    if(correct === QUESTIONS.length){ completeZone("z4"); }
+    else {
+      Sound.bad();
+      stage.innerHTML = `<div style="text-align:center;font-family:var(--mono);padding:20px">
+        <div style="font-size:34px">📚</div>
+        <div style="color:#fca5a5;font-size:14px;margin:8px 0">Exam failed — ${correct}/${QUESTIONS.length}.</div>
+        <div style="color:var(--dim);font-size:11px;margin-bottom:12px">Clearance requires a perfect score. Review and retry.</div>
+        <button class="btn primary" id="retryOwasp">↻ Retake exam</button>
+      </div>`;
+      $("#retryOwasp").addEventListener("click", ()=>{ Sound.click(); challengeOWASP(); });
+      setStatus("✖ Perfect score required. Retake the exam.","bad");
+    }
+  }
+  setStatus("Select the correct answer for each question.","");
+  render();
+}
+
+/* ------------------------------------------------------------------
+   10. INPUT — keyboard navigation on the map
+------------------------------------------------------------------- */
+document.addEventListener("keydown", (e)=>{
+  // Boot: Enter starts
+  if(State.screen === "boot"){
+    if(e.key === "Enter" && $("#bootCta").classList.contains("show")){ startGame(); }
+    return;
+  }
+  if(State.screen !== "map") return;
+  const k = e.key.toLowerCase();
+  // 2x2 grid navigation
+  const moves = { a:-1, arrowleft:-1, d:1, arrowright:1, w:-2, arrowup:-2, s:2, arrowdown:2 };
+  if(k in moves){
+    e.preventDefault();
+    let n = State.selected + moves[k];
+    if(n>=0 && n<ZONES.length){ State.selected = n; syncSelection(); Sound.click(); }
+  } else if(["1","2","3","4"].includes(k)){
+    State.selected = parseInt(k)-1; syncSelection();
+  } else if(k === "enter"){
+    e.preventDefault(); Sound.click(); openZone(ZONES[State.selected].id);
+  }
+});
+
+/* Delegated: "Go to Zone" buttons inside locked resume sections */
+document.addEventListener("click", (e)=>{
+  const go = e.target.closest("[data-goto]");
+  if(go){ Sound.click(); if(State.screen==="boot") startGame(); openZone(go.dataset.goto); }
+});
+
+/* ------------------------------------------------------------------
+   11. TOP-BAR CONTROLS
+------------------------------------------------------------------- */
+function doBypass(){
+  State.bypassed = true;
+  ZONES.forEach(z=> State.cleared[z.id]=true);
+  updateClearance();
+  // If still on boot, drop straight into the app first
+  if(State.screen === "boot"){ startGame(true); }
+  revealAll(true);
+  Sound.win();
+  toast("⏭ BYPASS ACCEPTED — full dossier decrypted.");
+  renderMap();
+  // scroll resume to top so the header is in view
+  $("#resume")?.parentElement?.scrollTo?.({top:0, behavior:"smooth"});
+}
+$("#bypassBtn").addEventListener("click", doBypass);
+$("#bootSkip").addEventListener("click", doBypass);
+
+$("#muteBtn").addEventListener("click", (e)=>{
+  State.muted = !State.muted;
+  e.currentTarget.textContent = State.muted ? "🔇" : "🔊";
+  e.currentTarget.title = State.muted ? "Sound off" : "Sound on";
+  if(!State.muted) Sound.click();
+});
+
+/* Final overlay buttons */
+$("#finalClose").addEventListener("click", ()=>{ $("#final").classList.remove("show"); });
+$("#finalRestart").addEventListener("click", ()=>{
+  $("#final").classList.remove("show");
+  State.cleared = {z1:false,z2:false,z3:false,z4:false};
+  State.bypassed = false; State.selected = 0;
+  updateClearance(); renderResume(); renderMap();
+  toast("↻ Audit reset — zones re-locked.");
+});
+
+/* ------------------------------------------------------------------
+   12. GAME START / BOOT ORCHESTRATION
+------------------------------------------------------------------- */
+function startGame(silent=false){
+  const boot = $("#boot");
+  boot.style.transition = "opacity .5s";
+  boot.style.opacity = "0";
+  setTimeout(()=>{ boot.style.display = "none"; }, 480);
+  $("#app").setAttribute("aria-hidden","false");
+  if(!silent){ Sound.good(); }
+  if(State.screen === "boot"){ State.screen = "map"; renderMap(); }
+}
+
+$("#startBtn").addEventListener("click", ()=> startGame());
+
+/* ------------------------------------------------------------------
+   13. INIT
+------------------------------------------------------------------- */
+renderResume();      // build the (locked) dossier
+updateClearance();   // reset HUD
+runBoot();           // play boot sequence
+</script>
+</body>
+</html>
