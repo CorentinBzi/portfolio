@@ -262,7 +262,14 @@ export function createRenderer(canvas) {
 
     present() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      const dispo = canvas.parentElement.getBoundingClientRect();
+      // On mesure l'aire réellement disponible, padding du conteneur déduit :
+      // sinon le canvas déborde de quelques pixels sur un écran étroit.
+      const par = canvas.parentElement;
+      const cs = getComputedStyle(par);
+      const dispo = {
+        width: par.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+        height: par.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom),
+      };
       // Échelle entière tant qu'on tient au moins deux fois : le pixel reste net.
       // En dessous — un téléphone en portrait — on accepte une échelle fractionnaire,
       // parce qu'un jeu minuscule au milieu d'un écran vide ne sert personne.
