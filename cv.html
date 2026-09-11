@@ -24,7 +24,7 @@
   --serif:"Source Serif 4",Georgia,serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{
   margin:0;background:#EEF0F3;color:var(--ink);
   font-family:var(--serif);font-size:10.2pt;line-height:1.44;
@@ -122,7 +122,7 @@ h2.sec .cont{font-weight:500;letter-spacing:.04em;color:var(--ink-3);text-transf
   h2.sec{break-after:avoid}
   .role-block,.gap,.edu-row,.win{break-inside:avoid}
 }
-@media (max-width:800px){
+@media screen and (max-width:800px){
   .page{width:auto;padding:22px 18px}
   .id{flex-direction:column;gap:8px}
   .id .reach{text-align:left}
@@ -135,8 +135,9 @@ h2.sec .cont{font-weight:500;letter-spacing:.04em;color:var(--ink-3);text-transf
 </head>
 <body>
 
-<p class="print-tip"><b>Pour obtenir le PDF :</b> imprimer cette page (Ctrl+P) et choisir
-« Enregistrer au format PDF », format A4, marges par défaut, arrière-plans activés.</p>
+<p class="print-tip"><b>Pour obtenir le PDF :</b> imprimer cette page (Ctrl+P) puis
+« Enregistrer au format PDF », format A4. La pagination est figée à deux pages et les couleurs
+sont conservées automatiquement.</p>
 
 <article class="page">
 
