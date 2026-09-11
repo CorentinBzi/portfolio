@@ -56,6 +56,19 @@ kbd{font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;
 .cle{width:9px;height:9px;border:1px solid var(--c);border-radius:1px;transform:rotate(45deg);opacity:.55}
 .cle.ok{background:var(--c);opacity:1;box-shadow:0 0 8px var(--c)}
 #minicarte{position:absolute;right:14px;top:12px;width:96px;height:120px;border:1px solid var(--ligne);border-radius:2px}
+.poi{position:absolute;transform:translate(-50%,-100%);pointer-events:none;text-align:center;white-space:nowrap;
+  font-size:11px;letter-spacing:.06em;color:var(--texte);transition:opacity .2s}
+.poi b{display:block;font:800 12px/1.2 var(--sans);color:var(--c);letter-spacing:.12em;text-shadow:0 0 10px var(--c),0 1px 2px #000}
+.poi span{display:inline-block;background:rgba(11,14,17,.8);border:1px solid var(--c);border-radius:2px;padding:2px 7px;margin-top:3px;color:var(--texte2)}
+.poi::after{content:"";display:block;width:1px;height:14px;background:var(--c);margin:4px auto 0;opacity:.7}
+.poi.fait b::before{content:"\2713  ";color:#6FCF8E}
+#cap{position:absolute;left:14px;bottom:22px;display:flex;align-items:center;gap:10px;background:rgba(11,14,17,.82);
+  border:1px solid var(--ligne);border-left:3px solid var(--c,var(--sonde));border-radius:2px;padding:7px 12px 7px 10px;font-size:12px;letter-spacing:.06em}
+#cap[hidden]{display:none}
+#cap i{display:block;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:14px solid var(--c,var(--sonde));
+  transform-origin:50% 60%;transition:transform .15s linear}
+#cap span{color:var(--texte)}
+#cap::before{content:"PROCHAIN";font-size:9px;letter-spacing:.14em;color:var(--texte2);margin-right:2px}
 #invite{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(11,14,17,.86);
   border:1px solid var(--ligne);border-left:3px solid var(--sonde);border-radius:2px;padding:9px 14px;font-size:13px;white-space:nowrap}
 #invite[hidden]{display:none}
@@ -112,6 +125,7 @@ kbd{font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;
     <div id="cles"></div>
     <canvas id="minicarte" width="96" height="120" aria-hidden="true"></canvas>
     <div id="invite" hidden></div>
+    <div id="cap" hidden><i aria-hidden="true"></i><span></span></div>
   </div>
   <div id="pad" aria-hidden="true"><div class="joy"></div><div class="act">ENTRER</div></div>
   <div id="panneau" hidden></div>

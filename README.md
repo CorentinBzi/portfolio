@@ -47,6 +47,8 @@ charge.
 index.html            la page, l'import map Three.js, le HUD
 src/main.js           rendu, bloom, portails, passage ville -> jeu -> ville, minicarte
 src/ville.js          la ville : blocs, arêtes néon, enseignes, rails, véhicules, portails
+src/decor.js          le ciel peint, et les détails instanciés : toits, balcons, tuyaux, câbles,
+                      passerelles, vitrines, auvents, lianes, faisceaux
 src/enseignes.js      textures d'enseignes dessinées sur canvas
 src/sonde.js          la sonde, ses commandes, la caméra
 src/entrees.js        clavier, manette, joystick tactile

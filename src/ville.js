@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { P, QUARTIERS, ENSEIGNES_BRUIT } from './palette.js';
 import { enseigne, textureFenetres } from './enseignes.js';
+import { ajouterDetails } from './decor.js';
 
 export const PAS = 16;      // pas de la grille
 export const BLOC = 10;     // emprise bâtie d'un bloc
@@ -42,7 +43,7 @@ export function construireVille(scene, options = {}) {
   scene.add(groupe);
 
   // ---- sol : un miroir sombre, comme de l'asphalte mouillé ----
-  const solGeo = new THREE.PlaneGeometry(520, 520);
+  const solGeo = new THREE.PlaneGeometry(900, 900);
   const miroir = options.miroir === false
     ? new THREE.Mesh(solGeo, new THREE.MeshBasicMaterial({ color: 0x2a323a }))
     : new Reflector(solGeo, { clipBias: 0.003, textureWidth: 1024, textureHeight: 1024, color: 0x2a323a });
@@ -69,7 +70,7 @@ export function construireVille(scene, options = {}) {
   const batiments = [];   // {x,z,w,h,d,accent}
   const grands = [];      // immeubles hauts en bord d'avenue
   const fenetres = textureFenetres('#5a7a90');
-  fenetres.repeat.set(2, 6);
+  fenetres.repeat.set(6, 14);      // une fenêtre par ~1,5 m sur un bloc de 10
 
   for (let bx = -GRILLE_X; bx <= GRILLE_X; bx++) {
     for (let bz = -GRILLE_Z; bz <= GRILLE_Z; bz++) {
@@ -86,6 +87,16 @@ export function construireVille(scene, options = {}) {
         const h = 6 + rnd() * (proche ? 22 : 14);
         batiments.push({ x: cx, z: cz, w: BLOC, d: BLOC, h, accent });
         if (proche && h > 16) grands.push({ x: cx, z: cz, h, cote: bx });
+        // étages en retrait : la silhouette monte par paliers, le toit se charge
+        if (h > 12) {
+          let y = h, w = BLOC, d = BLOC;
+          for (let k = 0; k < 1 + Math.floor(rnd() * 2); k++) {
+            w *= 0.55 + rnd() * 0.25; d *= 0.55 + rnd() * 0.25;
+            const hh = 3 + rnd() * 7;
+            batiments.push({ x: cx + (rnd() - 0.5) * (BLOC - w), z: cz + (rnd() - 0.5) * (BLOC - d), w, d, h: hh, y0: y, accent, etage: true });
+            y += hh;
+          }
+        }
       } else if (n === 2) {
         const vert = rnd() < 0.5;
         for (let i = 0; i < 2; i++) {
@@ -117,7 +128,7 @@ export function construireVille(scene, options = {}) {
   const m4 = new THREE.Matrix4();
   batiments.forEach((b, i) => {
     m4.makeScale(b.w, b.h, b.d);
-    m4.setPosition(b.x, b.h / 2, b.z);
+    m4.setPosition(b.x, (b.y0 || 0) + b.h / 2, b.z);
     inst.setMatrixAt(i, m4);
   });
   inst.instanceMatrix.needsUpdate = true;
@@ -128,8 +139,9 @@ export function construireVille(scene, options = {}) {
   const tmpCol = new THREE.Color();
   const seg = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
   for (const b of batiments) {
-    const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2, z0 = b.z - b.d / 2, z1 = b.z + b.d / 2, y1 = b.h;
-    const v = [[x0,0,z0],[x1,0,z0],[x1,0,z1],[x0,0,z1],[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]];
+    const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2, z0 = b.z - b.d / 2, z1 = b.z + b.d / 2;
+    const yb = b.y0 || 0, y1 = yb + b.h;
+    const v = [[x0,yb,z0],[x1,yb,z0],[x1,yb,z1],[x0,yb,z1],[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]];
     tmpCol.set(b.accent.num);
     const dim = 0.35 + rnd() * 0.5;
     for (const [a, c] of seg) {
@@ -203,7 +215,7 @@ export function construireVille(scene, options = {}) {
 
   // ---- enseignes des rues transversales : les faces nord et sud des blocs proches ----
   for (const b of batiments) {
-    if (Math.abs(b.x) > PAS * 2.5 || rnd() > 0.35) continue;
+    if (Math.abs(b.x) > PAS * 3.5 || rnd() > 0.6 || b.etage) continue;
     const txt = ENSEIGNES_BRUIT[Math.floor(rnd() * ENSEIGNES_BRUIT.length)];
     const e = enseigne(txt, fonds[Math.floor(rnd() * fonds.length)], encres[Math.floor(rnd() * encres.length)], 2.4 + rnd() * 1.6, 'h', 0.9);
     const face = rnd() < 0.5 ? 1 : -1;
@@ -222,7 +234,7 @@ export function construireVille(scene, options = {}) {
 
     const mat = new THREE.MeshStandardMaterial({
       color: tour ? 0x1c222a : P.beton2, roughness: 0.6, metalness: 0.2,
-      emissive: acc.num, emissiveIntensity: tour ? 0.06 : 0.04, map: fenetres,
+      map: fenetres, emissive: 0xffffff, emissiveMap: fenetres, emissiveIntensity: 0.8,
     });
     const corps = new THREE.Mesh(new THREE.BoxGeometry(w, h, prof), mat);
     corps.position.set(cx, h / 2, cz);
@@ -250,19 +262,51 @@ export function construireVille(scene, options = {}) {
     // anneau d'entrée au sol, devant la façade
     const ex = tour ? cx : cx + face * (w / 2 + 5);
     const ez = tour ? cz + prof / 2 + 7 : cz;
-    const anneau = new THREE.Mesh(new THREE.RingGeometry(2.6, 3.2, 48),
-      new THREE.MeshBasicMaterial({ color: acc.num, transparent: true, opacity: 0.55, side: THREE.DoubleSide, toneMapped: false }));
+    const anneau = new THREE.Mesh(new THREE.RingGeometry(3.0, 3.8, 56),
+      new THREE.MeshBasicMaterial({ color: acc.num, transparent: true, opacity: 0.6, side: THREE.DoubleSide, toneMapped: false }));
     anneau.rotation.x = -Math.PI / 2;
     anneau.position.set(ex, 0.05, ez);
     groupe.add(anneau);
+    const disque = new THREE.Mesh(new THREE.CircleGeometry(3.0, 40),
+      new THREE.MeshBasicMaterial({ color: acc.num, transparent: true, opacity: 0.08, toneMapped: false, depthWrite: false }));
+    disque.rotation.x = -Math.PI / 2; disque.position.set(ex, 0.04, ez); groupe.add(disque);
+
+    // portique : deux pylônes et un linteau lumineux, on passe dessous pour entrer
+    const pyloneMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(acc.num).multiplyScalar(0.62), toneMapped: false });
+    const pyloneSombre = new THREE.MeshStandardMaterial({ color: 0x1a2028, roughness: 0.7, metalness: 0.3 });
+    const axeX = tour ? 1 : 0;                           // le portique barre le sens d'approche
+    for (const s of [-1, 1]) {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.7, 7.5, 0.7), pyloneSombre);
+      p.position.set(ex + (axeX ? s * 4.6 : 0), 3.75, ez + (axeX ? 0 : s * 4.6));
+      groupe.add(p);
+      const ruban = new THREE.Mesh(new THREE.BoxGeometry(0.76, 7.5, 0.16), pyloneMat);
+      ruban.position.copy(p.position); ruban.rotation.y = axeX ? 0 : Math.PI / 2; groupe.add(ruban);
+    }
+    const linteau = new THREE.Mesh(new THREE.BoxGeometry(axeX ? 10 : 0.5, 0.5, axeX ? 0.5 : 10), pyloneMat);
+    linteau.position.set(ex, 7.6, ez); groupe.add(linteau);
+
+    // colonne de lumière : visible de loin, elle dit « ici on entre »
+    const colonne = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 2.6, 70, 22, 1, true),
+      new THREE.MeshBasicMaterial({ color: acc.num, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+    colonne.position.set(ex, 35, ez); groupe.add(colonne);
+
+    // hologramme : nom et verbe qui tournent au-dessus de l'anneau
+    const holo = new THREE.Group();
+    const h1 = enseigne(d.nom, '#0B0E11', acc.hex, 6.2, 'h', 1); h1.position.y = 0.9;
+    const h2 = enseigne(d.verbe, acc.hex, '#0B0E11', 4.4, 'h', 0.8); h2.position.y = -0.7;
+    h1.material.transparent = h2.material.transparent = true; h1.material.opacity = h2.material.opacity = 0.92;
+    holo.add(h1, h2); holo.position.set(ex, 10.2, ez); groupe.add(holo);
 
     // lumière du quartier
-    const lum = new THREE.PointLight(acc.num, tour ? 60 : 30, 46, 1.6);
+    const lum = new THREE.PointLight(acc.num, tour ? 80 : 46, 52, 1.5);
     lum.position.set(ex, 7, ez);
     groupe.add(lum);
 
-    portails.push({ ...d, accent: acc, x: ex, z: ez, rayon: 3.4, anneau, lumiere: lum });
+    portails.push({ ...d, accent: acc, x: ex, z: ez, rayon: 3.8, anneau, lumiere: lum, holo, colonne });
   }
+
+  // ---- le décor : toits, balcons, tuyaux, vitrines, lianes, câbles, passerelles, faisceaux ----
+  const decor = ajouterDetails(groupe, batiments, rnd, { PAS, BLOC, GRILLE_Z, portails });
 
   // ---- poussière en suspension : quelques centaines de points ----
   const nP = 600, pp = new Float32Array(nP * 3);
@@ -313,9 +357,13 @@ export function construireVille(scene, options = {}) {
       e.visible = v > -1.4;
     }
     for (const p of portails) {
-      p.anneau.material.opacity = 0.4 + 0.25 * Math.sin(t * 2.2 + p.bz);
+      p.anneau.material.opacity = 0.45 + 0.25 * Math.sin(t * 2.2 + p.bz);
       p.anneau.rotation.z = t * 0.2;
+      p.holo.rotation.y = t * 0.6;
+      p.holo.position.y = 10.2 + Math.sin(t * 1.3 + p.bz) * 0.25;
+      p.colonne.material.opacity = 0.07 + 0.03 * Math.sin(t * 1.1 + p.bz);
     }
+    decor.animer(t);
     points.rotation.y = t * 0.004;
     for (const v of vehicules) {
       const u = v.userData;

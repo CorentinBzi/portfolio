@@ -10,6 +10,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 import { P, QUARTIERS } from './palette.js';
 import { construireVille, DISTRICTS, PAS } from './ville.js';
+import { construireCiel } from './decor.js';
 import { creerSonde } from './sonde.js';
 import { creerEntrees } from './entrees.js';
 import { FAITS, PROFIL } from './cv.js';
@@ -30,24 +31,19 @@ const conteneur = document.getElementById('scene');
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
 renderer.toneMapping = SANS.has('tone') ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.15;
 conteneur.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-// le ciel : un dégradé du noir-bleu vers un horizon un peu plus clair, dessiné sur canvas
-{
-  const c = document.createElement('canvas'); c.width = 4; c.height = 256;
-  const g = c.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, 256);
-  grad.addColorStop(0, '#04060A'); grad.addColorStop(0.28, '#0A0E16'); grad.addColorStop(0.44, '#1a2846'); grad.addColorStop(0.52, '#0d121c'); grad.addColorStop(1, '#0B0E11');
-  g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  scene.background = tex;
-}
-if (!SANS.has('fog')) scene.fog = new THREE.FogExp2(P.nuit, 0.011);
+construireCiel(scene);
+if (!SANS.has('fog')) scene.fog = new THREE.FogExp2(0x1a1420, 0.0082);
 
-const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 260);
-scene.add(new THREE.HemisphereLight(0x2a3a55, 0x05070a, 1.8));
+const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 700);
+// lumière : un ciel chaud de fin de journée, un sol froid, et un soleil bas au nord-ouest
+scene.add(new THREE.HemisphereLight(0x6a4050, 0x0a1016, 1.7));
+const soleil = new THREE.DirectionalLight(0xffa46a, 1.7);
+soleil.position.set(-90, 55, -70);
+scene.add(soleil);
 
 const ville = construireVille(scene, { miroir: !SANS.has('miroir') });
 const entrees = creerEntrees(document.getElementById('pad'));
@@ -213,6 +209,63 @@ function terminerJeu(j, p, gagne, res) {
     [{ label: 'Retour à la ville', fort: true, action: fermerPanneau }]);
 }
 
+// ---------------------------------------------------------------- points d'intérêt
+// Chaque portail a une étiquette DOM projetée à l'écran : nom, verbe, distance.
+const hud = el('hud');
+const poiEls = ville.portails.map(p => {
+  const d = document.createElement('div');
+  d.className = 'poi';
+  d.style.setProperty('--c', p.accent.hex);
+  d.innerHTML = `<b>${p.nom}</b><span></span>`;
+  d.hidden = true;
+  hud.appendChild(d);
+  return d;
+});
+const v3 = new THREE.Vector3();
+function dessinerPoi() {
+  const w = conteneur.clientWidth, h = conteneur.clientHeight;
+  // les deux portails les plus proches devant soi, sans se chevaucher : le reste attend son tour
+  const visibles = ville.portails.map((p, i) => {
+    const dist = Math.hypot(sonde.pos.x - p.x, sonde.pos.z - p.z);
+    v3.set(p.x, 12.5, p.z).project(camera);
+    const devant = v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
+    return { p, i, dist, sx: (v3.x + 1) / 2 * w, sy: (1 - (v3.y + 1) / 2) * h, ok: devant && dist > 5 && dist < 130 };
+  }).filter(v => v.ok).sort((a, b) => a.dist - b.dist).slice(0, 2);
+  poiEls.forEach(e => { e.hidden = true; });
+  let precedent = null;
+  for (const v of visibles) {
+    const e = poiEls[v.i];
+    let sy = v.sy;
+    if (precedent && Math.abs(v.sx - precedent.sx) < 140 && Math.abs(sy - precedent.sy) < 60) sy = precedent.sy - 58;
+    e.hidden = false;
+    e.style.left = v.sx + 'px';
+    e.style.top = sy + 'px';
+    e.style.opacity = v.dist < 20 ? 1 : Math.max(0.45, 1 - (v.dist - 20) / 150);
+    e.classList.toggle('fait', etat.cles.includes(v.p.id));
+    e.querySelector('span').textContent = `${v.p.verbe.toLowerCase()} · ${Math.round(v.dist)} m`;
+    precedent = { sx: v.sx, sy };
+  }
+}
+
+// boussole : le prochain quartier non visité, sa distance, et où il est par rapport au cap
+const capEl = el('cap'), capFleche = capEl.querySelector('i'), capTexte = capEl.querySelector('span');
+function dessinerCap() {
+  const restants = ville.portails.filter(p => !etat.cles.includes(p.id));
+  if (!restants.length) { capEl.hidden = true; return; }
+  // le plus au sud des restants : on suit l'ordre du parcours
+  const p = restants.reduce((a, b) => (a.z > b.z ? a : b));
+  const dx = p.x - sonde.pos.x, dz = p.z - sonde.pos.z;
+  const dist = Math.hypot(dx, dz);
+  // angle entre le cap de la sonde et la direction du portail, en degrés, 0 = droit devant
+  const versPortail = Math.atan2(-dx, -dz);
+  let rel = versPortail - sonde.yaw;
+  rel = Math.atan2(Math.sin(rel), Math.cos(rel));
+  capEl.hidden = false;
+  capEl.style.setProperty('--c', p.accent.hex);
+  capFleche.style.transform = `rotate(${(-rel * 180 / Math.PI).toFixed(0)}deg)`;
+  capTexte.textContent = `${p.nom} · ${Math.round(dist)} m`;
+}
+
 // ---------------------------------------------------------------- minicarte
 function dessinerMinicarte() {
   const w = minicarte.width, h = minicarte.height;
@@ -253,6 +306,8 @@ function boucle(now) {
     else entrees.action();
   }
   ville.animer(tVille);
+  dessinerPoi();
+  dessinerCap();
   // en capture, rendu direct : le rendu logiciel headless ne sort rien du composer
   if (CAPTURE) renderer.render(scene, camera); else composer.render();
   dessinerMinicarte();
@@ -261,7 +316,7 @@ requestAnimationFrame(boucle);
 // en capture headless, requestAnimationFrame peut ne jamais tirer : on rend une image tout de suite
 if (CAPTURE) {
   sonde.mettreAJour(1 / 60); ville.animer(0); verifierPortails();
-  renderer.render(scene, camera); dessinerMinicarte();
+  renderer.render(scene, camera); dessinerMinicarte(); dessinerPoi(); dessinerCap();
   window.__capturePret = true;
   setTimeout(() => { sonde.mettreAJour(1 / 60); renderer.render(scene, camera); }, 400);
   // diagnostic headless : taille du canvas, appels de dessin, pixel central
