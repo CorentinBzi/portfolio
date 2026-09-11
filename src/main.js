@@ -39,7 +39,7 @@ const scene = new THREE.Scene();
   const c = document.createElement('canvas'); c.width = 4; c.height = 256;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 0, 256);
-  grad.addColorStop(0, '#05070A'); grad.addColorStop(0.62, '#0B0E14'); grad.addColorStop(0.86, '#15213a'); grad.addColorStop(1, '#0B0E11');
+  grad.addColorStop(0, '#04060A'); grad.addColorStop(0.28, '#0A0E16'); grad.addColorStop(0.44, '#1a2846'); grad.addColorStop(0.52, '#0d121c'); grad.addColorStop(1, '#0B0E11');
   g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
   scene.background = tex;

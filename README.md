@@ -1,90 +1,87 @@
 # Quelqu'un sur place — portfolio de Corentin Bezille
 
-Un CV qui se joue. Jeu de plateforme 2D dans le navigateur, sans framework, sans
-compilation, sans un seul fichier image : tout est dessiné par le code.
+Un CV qui se joue. Une ville cyberpunk de nuit rendue en 3D dans le navigateur, six
+quartiers, un par étape du parcours, et dans chaque quartier un jeu qui **est** le métier
+qu'on y faisait. Aucune image, aucun modèle, aucun son importé : tout est dessiné par le code.
 
 | Page | Rôle |
 |---|---|
-| `index.html` | **Le jeu.** Six niveaux, un par étape du parcours. |
+| `index.html` | **La ville et les jeux.** |
 | `dossier.html` | Le même contenu à lire, pour qui ne veut pas jouer. |
 | `cv.html` | Le CV sur deux pages A4, imprimable en PDF. |
 
-## Le jeu en deux phrases
+## La ville
 
-Il est 02:14, un agent IA déployé dans un groupe hospitalier vient de décrocher. On incarne
-**la sonde**, un petit programme de diagnostic amputé de ses capacités : pour réparer, elle
-doit traverser les cinq environnements où ces capacités ont été écrites, et en rapporter un
-verbe à chaque fois.
+On pilote une sonde, un petit programme de diagnostic, au ras des rues. Le sud est 2018, le
+nord est aujourd'hui, et une tour ferme l'avenue : c'est le poste visé. Devant chaque portail,
+le fait de CV s'affiche avant même d'entrer, pour qui ne jouera pas. Entrer lance le jeu du
+quartier. Chaque jeu gagné donne une clé.
 
-## Les deux mécaniques
+| Quartier | Étape | Verbe | Le jeu |
+|---|---|---|---|
+| 1 | Medline, 2018-2020 | Traduire | Le helpdesk : diagnostiquer au terminal, puis expliquer avec les mots de l'utilisateur |
+| 2 | Thales, 2020-2021 | Instrumenter | La salle de stockage : poser des sondes, lire les courbes, prédire la saturation |
+| 3 | Albys, 2021-2023 | Segmenter | Le réseau : confiner un intrus par cloisons et règles sans casser les flux légitimes |
+| 4 | Indépendant, 2023-2025 | Attester | L'usurpation : lire SPF, DKIM et DMARC, trancher, puis assembler l'automatisation |
+| 5 | Digital Realty, depuis 2025 | Coordonner | La supervision : quatre incidents, cinq sites, des délais, un faux positif |
+| 6 | La tour — scénario | Diagnostiquer | 05:52, une IA hospitalière décroche : descendre les couches jusqu'à la cause physique |
 
-**L'impulsion.** En l'air, un deuxième appui sur Saut applique le verbe du niveau sur la
-cible la plus proche, et la transforme en sol praticable. Une seule par temps de vol,
-rechargée à l'atterrissage. Aucun verbe ne détruit : tous fabriquent du terrain. C'est ce
-qui interdit mécaniquement les ennemis, les pièces à ramasser et le combat.
-
-**La trace.** Maj bascule le monde entre ce que les gens disent et ce que les journaux
-disent. Les deux ne sont jamais d'accord : une plateforme rassurante s'évapore, la vraie
-cause apparaît. C'est une ressource de six secondes, pas une information gratuite. La
-géométrie vit dans la fonction de collision, pas dans le rendu, donc la mécanique ne peut
-pas devenir décorative.
-
-| Niveau | Étape | Verbe |
-|---|---|---|
-| 1 | Medline, 2018-2020 | Traduire |
-| 2 | Thales, 2020-2021 | Instrumenter |
-| 3 | Albys, 2021-2023 | Segmenter |
-| 4 | Indépendant, 2023-2025 | Attester |
-| 5 | Digital Realty, depuis 2025 | Coordonner |
-| 6 | Scénario — le poste visé | Les cinq |
-
-Le niveau 6 est une **mise en situation**, étiquetée comme telle partout : il ne revendique
+Le sixième est une **mise en situation**, étiquetée comme telle partout : il ne revendique
 aucune expérience.
 
 ## Honnêteté par construction
 
-Les faits du parcours vivent dans un seul fichier, `src/cv.js`. Un niveau ne contient aucun
-fait : il cite une clé. Le validateur refuse de démarrer sur une clé inconnue, donc le jeu
-ne *peut pas* inventer une ligne de CV.
+Les faits du parcours vivent dans un seul fichier, `src/cv.js`. Un jeu ne contient aucun
+fait : il cite une clé, et le validateur du contrat refuse une clé inconnue. Le jeu ne
+*peut pas* inventer une ligne de CV.
 
 ## Commandes
 
-Flèches ou ZQSD pour avancer · Espace pour sauter, puis à nouveau en l'air pour l'impulsion ·
-Maj pour lire les journaux · Échap pour revenir · Maj+D pour le dossier.
-Manette et tactile pris en charge, avec deux boutons seulement.
+Flèches ou ZQSD pour tourner et avancer · Maj pour accélérer · Espace pour entrer dans un
+quartier · Maj+D pour le dossier. Manette et tactile (joystick flottant, un bouton) pris en
+charge.
 
 ## Structure
 
 ```
-src/palette.js   les couleurs, et la règle qui réserve le rouge à l'anomalie
-src/physics.js   isSolid(flags, trace), la collision, les constantes de saut
-src/render.js    le seul fichier qui touche un contexte 2D, plus une police 3x5
-src/input.js     clavier, manette, tactile, fusionnés en un masque de bits
-src/game.js      la scène de niveau : impulsion, trace, caméra, HUD
-src/hub.js       l'échelle chronologique
-src/fin.js       l'écran de fin
-src/cv.js        les faits, gelés
-src/levels/      _contrat.js puis un fichier par niveau
-tools/recette.mjs un robot qui joue chaque niveau et vérifie qu'il se termine
+index.html            la page, l'import map Three.js, le HUD
+src/main.js           rendu, bloom, portails, passage ville -> jeu -> ville, minicarte
+src/ville.js          la ville : blocs, arêtes néon, enseignes, rails, véhicules, portails
+src/enseignes.js      textures d'enseignes dessinées sur canvas
+src/sonde.js          la sonde, ses commandes, la caméra
+src/entrees.js        clavier, manette, joystick tactile
+src/palette.js        les couleurs, et la règle qui réserve le rouge à l'anomalie
+src/cv.js             les faits, gelés
+src/jeux/_contrat.js  le contrat de jeu + les aides (cadre, terminal, colonne)
+src/jeux/index.js     le registre, une ligne par jeu
+src/jeux/<id>.js      un fichier par jeu
+tools/recette.html    la recette : chaque jeu se monte, se résout seul, se démonte
 ```
+
+Seule dépendance : Three.js, chargé par CDN via l'import map. Aucune étape de compilation.
 
 ## Développer
 
 ```bash
-python -m http.server 8123
+python -m http.server 8931
 ```
 
-Avant toute livraison, le seul critère qui compte :
+Recette des jeux, dans un navigateur ou en headless :
 
-```bash
-node tools/recette.mjs
+```
+tools/recette.html            tous les jeux du registre
+tools/recette.html?jeu=albys  un seul
+tools/recette.html?fichier=../src/jeux/x.js&apercu=1   monter sans résoudre, pour une capture
 ```
 
-Un joueur automatique traverse chaque niveau. S'il n'atteint pas la sortie, le niveau est
-à revoir. `tests.html` fait la même chose dans le navigateur.
+Chaque jeu doit exposer `resoudre()`, qui joue une solution correcte sans humain et aboutit à
+`api.fini` en moins de vingt secondes. Un jeu qui ne sait pas se résoudre ne sait pas prouver
+qu'il est gagnable.
+
+En headless, `index.html?capture=2` rend deux images sans bloom et s'arrête ;
+`?capture=2,x,z,cap` place la sonde ; `?panneau=<id>` ouvre un relevé ; `?jeu=<id>` lance un jeu.
 
 ## Contraintes tenues
 
-Aucune dépendance hors les polices Google. Aucun fichier image ni audio. Le contenu reste
-lisible sans JavaScript, via le dossier. Thème sombre, `prefers-reduced-motion` respecté,
-focus clavier visible. Site statique servi par GitHub Pages depuis la branche `main`.
+Site statique GitHub Pages (`.nojekyll` requis : Jekyll ignore les fichiers en `_`). Le contenu
+reste lisible sans JavaScript via le dossier. Thème sombre, focus clavier visible, repli tactile.
