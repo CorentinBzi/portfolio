@@ -1,164 +1,293 @@
-// Point d'entrée : boucle à pas fixe, machine à états de scènes, sauvegarde.
+// Point d'entrée : la ville en 3D, la sonde, les portails, et le passage
+// de la ville à un jeu puis retour. Un seul renderer pour la ville ; les jeux
+// dessinent où ils veulent dans leur conteneur, la ville s'arrête pendant ce temps.
 
-import { createRenderer, VUE_W, VUE_H, texte } from './render.js';
-import { createInput, B } from './input.js';
-import { creerNiveau } from './game.js';
-import { creerHub } from './hub.js';
-import { creerFin } from './fin.js';
-import { FAITS } from './cv.js';
-import { P, alpha } from './palette.js';
-import { NIVEAUX } from './levels/index.js';
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-const CLE_SAUVE = 'qsp.v1';
+import { P, QUARTIERS } from './palette.js';
+import { construireVille, DISTRICTS, PAS } from './ville.js';
+import { creerSonde } from './sonde.js';
+import { creerEntrees } from './entrees.js';
+import { FAITS, PROFIL } from './cv.js';
+import { JEUX, jeuPour } from './jeux/index.js';
+import { valider } from './jeux/_contrat.js';
 
-const app = {
-  etat: { faits: [], modules: [] },
-  scene: null,
-};
+const CLE_SAUVE = 'qsp3d.v1';
+const PARAMS = new URLSearchParams(location.search);
+const CAPTURE = PARAMS.has('capture') ? (PARAMS.get('capture') || '3').split(',').map(Number) : null;
+// ?sans=miroir,fog,tone : bisection des effets, pour la recette headless uniquement
+const SANS = new Set((PARAMS.get('sans') || '').split(',').filter(Boolean));
+const etat = { cles: [], mode: 'ville' };
+try { const s = JSON.parse(localStorage.getItem(CLE_SAUVE) || '{}'); if (Array.isArray(s.cles)) etat.cles = s.cles; } catch (e) {}
+function sauve() { try { localStorage.setItem(CLE_SAUVE, JSON.stringify({ cles: etat.cles })); } catch (e) {} }
 
-function charge() {
-  try {
-    const s = JSON.parse(localStorage.getItem(CLE_SAUVE) || '{}');
-    if (Array.isArray(s.faits)) app.etat.faits = s.faits;
-    if (Array.isArray(s.modules)) app.etat.modules = s.modules;
-  } catch (e) { /* stockage refusé : on joue sans mémoire, c'est tout */ }
+// ---------------------------------------------------------------- rendu
+const conteneur = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+renderer.toneMapping = SANS.has('tone') ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+conteneur.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+// le ciel : un dégradé du noir-bleu vers un horizon un peu plus clair, dessiné sur canvas
+{
+  const c = document.createElement('canvas'); c.width = 4; c.height = 256;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#05070A'); grad.addColorStop(0.62, '#0B0E14'); grad.addColorStop(0.86, '#15213a'); grad.addColorStop(1, '#0B0E11');
+  g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  scene.background = tex;
 }
-function sauve() {
-  try { localStorage.setItem(CLE_SAUVE, JSON.stringify(app.etat)); } catch (e) {}
+if (!SANS.has('fog')) scene.fog = new THREE.FogExp2(P.nuit, 0.011);
+
+const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 260);
+scene.add(new THREE.HemisphereLight(0x2a3a55, 0x05070a, 1.8));
+
+const ville = construireVille(scene, { miroir: !SANS.has('miroir') });
+const entrees = creerEntrees(document.getElementById('pad'));
+const sonde = creerSonde(scene, camera, entrees, ville.occupe);
+sonde.teleporter(0, 108, 0);
+if (CAPTURE && CAPTURE.length >= 3) sonde.teleporter(CAPTURE[1], CAPTURE[2], CAPTURE[3] || 0);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.65, 0.72);
+if (!CAPTURE) composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+function redimensionner() {
+  const w = conteneur.clientWidth, h = conteneur.clientHeight;
+  renderer.setSize(w, h, false);
+  renderer.domElement.style.width = w + 'px';
+  renderer.domElement.style.height = h + 'px';
+  composer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  if (CAPTURE && window.__capturePret) renderer.render(scene, camera);
 }
+addEventListener('resize', redimensionner);
+redimensionner();
 
-const canvas = document.getElementById('jeu');
-const pad = document.getElementById('pad');
-const r = createRenderer(canvas);
-const input = createInput(canvas, pad);
+// ---------------------------------------------------------------- HUD
+const el = id => document.getElementById(id);
+const invite = el('invite'), quartierEl = el('quartier'), clesEl = el('cles');
+const panneau = el('panneau'), jeuEl = el('jeu'), minicarte = el('minicarte');
+const mctx = minicarte.getContext('2d');
 
-// ---- carte de relevé : le fait de CV, en DOM, physique en pause ----
-const carteEl = document.getElementById('releve');
-let carteOuverte = false;
+function afficheCles() {
+  clesEl.innerHTML = DISTRICTS.map(d => {
+    const ok = etat.cles.includes(d.id);
+    return `<span class="cle${ok ? ' ok' : ''}" style="--c:${QUARTIERS[d.id].hex}" title="${d.nom}"></span>`;
+  }).join('');
+}
+afficheCles();
 
-function montreCarte(factKey, accent, apres) {
-  const f = FAITS[factKey];
-  if (!f) { apres && apres(); return; }
-  carteOuverte = true;
+function ouvrirPanneau(html, boutons) {
   document.body.dataset.modal = '1';
-  carteEl.style.setProperty('--acc', accent || '#FFB454');
-  carteEl.innerHTML = `
-    <div class="rel-in" role="dialog" aria-modal="true" aria-labelledby="rel-t">
-      <p class="rel-k">${factKey === 'scenario' ? 'Scénario — mise en situation' : 'Relevé'}</p>
-      <h2 id="rel-t">${f.employeur} <span>${f.periode}</span></h2>
-      <p class="rel-p">${f.poste}</p>
-      <p>${f.texte}</p>
-      <p class="rel-w"><b>Ce que ça vaut pour le poste visé :</b> ${f.pourLePoste}</p>
-      <button id="rel-ok" class="rel-b">Continuer</button>
-    </div>`;
-  carteEl.hidden = false;
-  const b = document.getElementById('rel-ok');
-  b.focus();
-  const fermer = () => {
-    carteEl.hidden = true;
-    carteOuverte = false;
-    document.body.dataset.modal = '0';
-    input.reset();
-    canvas.focus();
-    apres && apres();
-  };
-  b.onclick = fermer;
-  carteEl.onkeydown = e => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); fermer(); } };
+  panneau.innerHTML = `<div class="pan-in" role="dialog" aria-modal="true">${html}<div class="pan-btns"></div></div>`;
+  const zone = panneau.querySelector('.pan-btns');
+  for (const b of boutons) {
+    const btn = document.createElement('button');
+    btn.className = 'btn' + (b.fort ? ' fort' : '');
+    btn.textContent = b.label;
+    btn.addEventListener('click', b.action);
+    zone.appendChild(btn);
+  }
+  panneau.hidden = false;
+  const premier = zone.querySelector('.btn.fort') || zone.querySelector('.btn');
+  premier && premier.focus();
+}
+function fermerPanneau() {
+  panneau.hidden = true;
+  panneau.innerHTML = '';
+  document.body.dataset.modal = '0';
+  entrees.reset();
+}
+panneau.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); if (etat.mode === 'ville') fermerPanneau(); }
+});
+
+function carteFait(d) {
+  const f = FAITS[d.id];
+  const acc = QUARTIERS[d.id].hex;
+  const scen = d.id === 'scenario';
+  return `
+    <p class="pan-k" style="color:${acc}">${scen ? 'Scénario — mise en situation' : 'Relevé du quartier'}</p>
+    <h2>${f.employeur} <span>${f.periode}</span></h2>
+    <p class="pan-p">${f.poste}</p>
+    <p>${f.texte}</p>
+    <p class="pan-w"><b>Ce que ça vaut pour le poste visé :</b> ${f.pourLePoste}</p>`;
 }
 
-app.jouer = function (id) {
-  const def = NIVEAUX.find(n => n.id === id);
-  if (!def) return;
-  const sc = creerNiveau(app, def);
-  if (sc.erreur) { app.scene = ecranErreur(sc.erreur); return; }
-  app.scene = sc;
-  input.reset();
-  // le fait est délivré à l'entrée, pas en récompense : qui abandonne
-  // à la vingtième seconde repart quand même avec l'information
-  montreCarte(def.factKey, def.accent);
-};
+// ---------------------------------------------------------------- portails
+let portailProche = null;
 
-app.finNiveau = function (def) {
-  if (!app.etat.faits.includes(def.id)) app.etat.faits.push(def.id);
-  if (def.verbe && !app.etat.modules.includes(def.verbe)) app.etat.modules.push(def.verbe);
+function verifierPortails() {
+  let best = null, bd = 1e9;
+  for (const p of ville.portails) {
+    const dx = sonde.pos.x - p.x, dz = sonde.pos.z - p.z;
+    const d = Math.hypot(dx, dz);
+    if (d < p.rayon + 1.2 && d < bd) { bd = d; best = p; }
+  }
+  if (best !== portailProche) {
+    portailProche = best;
+    if (best) {
+      const j = jeuPour(best.id);
+      invite.innerHTML = `<kbd>Espace</kbd> entrer — <b style="color:${best.accent.hex}">${best.nom}</b>${j ? ' · ' + j.verbe.toLowerCase() : ''}`;
+      invite.hidden = false;
+    } else invite.hidden = true;
+  }
+  // le quartier courant, d'après la rangée
+  let q = null, qd = 1e9;
+  for (const d of DISTRICTS) { const dz = Math.abs(sonde.pos.z - d.bz * PAS); if (dz < qd) { qd = dz; q = d; } }
+  quartierEl.textContent = q ? `${q.nom} · ${q.annees}` : '';
+}
+
+function entrerPortail(p) {
+  const j = jeuPour(p.id);
+  const deja = etat.cles.includes(p.id);
+  const boutons = [];
+  if (j) boutons.push({ label: deja ? 'Rejouer' : 'Jouer', fort: true, action: () => { fermerPanneau(); lancerJeu(j, p); } });
+  boutons.push({ label: 'Retour à la ville', action: fermerPanneau });
+  ouvrirPanneau(carteFait(p) + (j ? `<p class="pan-j"><b>${j.verbe}</b> — ${j.description}</p>`
+                                    : `<p class="pan-j">Le jeu de ce quartier arrive bientôt.</p>`), boutons);
+}
+
+// ---------------------------------------------------------------- jeux
+let jeuCourant = null;
+
+function lancerJeu(j, p) {
+  const err = valider(j);
+  if (err.length) { ouvrirPanneau(`<h2>Jeu refusé</h2><p>${err.join('<br>')}</p>`, [{ label: 'Retour', fort: true, action: fermerPanneau }]); return; }
+  etat.mode = 'jeu';
+  document.body.dataset.modal = '1';
+  jeuEl.innerHTML = '';
+  jeuEl.hidden = false;
+  jeuEl.style.setProperty('--acc', j.accent);
+  const api = {
+    FAITS, accent: j.accent,
+    fini({ score, message } = {}) { terminerJeu(j, p, true, { score, message }); },
+    abandonner() { terminerJeu(j, p, false); },
+  };
+  try {
+    jeuCourant = j.monter(jeuEl, api) || {};
+  } catch (e) {
+    console.error(e);
+    terminerJeu(j, p, false);
+    ouvrirPanneau(`<h2>Le jeu a rencontré une erreur</h2><p>${String(e.message || e)}</p>`,
+                  [{ label: 'Retour à la ville', fort: true, action: fermerPanneau }]);
+  }
+}
+
+function terminerJeu(j, p, gagne, res) {
+  try { jeuCourant && jeuCourant.demonter && jeuCourant.demonter(); } catch (e) { console.error(e); }
+  jeuCourant = null;
+  jeuEl.hidden = true;
+  jeuEl.innerHTML = '';
+  etat.mode = 'ville';
+  document.body.dataset.modal = '0';
+  entrees.reset();
+  redimensionner();
+  if (!gagne) return;
+  if (!etat.cles.includes(j.id)) etat.cles.push(j.id);
   sauve();
-  // tout est traversé : on conclut, une seule fois, puis retour au hub
-  if (app.etat.faits.length >= NIVEAUX.length) {
-    app.scene = creerFin(app);
-    input.reset();
-    return;
-  }
-  const i = NIVEAUX.findIndex(n => n.id === def.id);
-  app.scene = creerHub(app, NIVEAUX, Math.min(NIVEAUX.length - 1, i + 1));
-  input.reset();
-};
-
-app.versHub = function () {
-  app.scene = creerHub(app, NIVEAUX, 0);
-  input.reset();
-};
-
-function ecranErreur(msg) {
-  return {
-    pas() {},
-    dessine(r) {
-      const c = r.ctx;
-      c.fillStyle = P.fond; c.fillRect(0, 0, VUE_W, VUE_H);
-      texte(c, 'NIVEAU REFUSE AU DEMARRAGE', VUE_W / 2, 110, P.anomalie, 'center');
-      const mots = String(msg).match(/.{1,58}/g) || [];
-      mots.forEach((m, i) => texte(c, m, VUE_W / 2, 132 + i * 10, P.texte2, 'center'));
-      texte(c, 'D : DOSSIER  -  ECHAP : RETOUR', VUE_W / 2, 200, P.texte2, 'center');
-    },
-  };
+  afficheCles();
+  const total = DISTRICTS.length;
+  const tout = etat.cles.length >= total;
+  const acc = QUARTIERS[j.id].hex;
+  ouvrirPanneau(
+    `<p class="pan-k" style="color:${acc}">${tout ? 'Ville traversée' : 'Clé acquise'}</p>
+     <h2>${j.employeur} <span>${j.verbe}</span></h2>
+     <p>${(res && res.message) || 'Le quartier est validé.'}</p>
+     ${tout ? `<p class="pan-w">Vous avez traversé cinq postes et un scénario. La machine peut écrire le
+       correctif ; elle ne peut pas décider, à quatre heures du matin, qui on réveille dans le service,
+       ni avec quels mots. C'est le poste que je cherche.</p>
+       <p class="pan-w"><b>${PROFIL.nom}</b> · <a href="mailto:${PROFIL.email}">${PROFIL.email}</a></p>`
+            : `<p class="pan-w">${etat.cles.length} quartier${etat.cles.length > 1 ? 's' : ''} sur ${total}. Le suivant est plus au nord.</p>`}`,
+    [{ label: 'Retour à la ville', fort: true, action: fermerPanneau }]);
 }
 
-// ---- boucle à pas fixe ----
-let acc = 0, dernier = 0;
-const PAS = 1000 / 60;
-
-function boucle(ts) {
-  requestAnimationFrame(boucle);
-  if (!dernier) dernier = ts;
-  let dt = ts - dernier;
-  dernier = ts;
-  if (dt > 250) dt = 250;              // onglet revenu au premier plan
-  acc += dt;
-  let tours = 0;
-  while (acc >= PAS && tours < 5) {
-    acc -= PAS; tours++;
-    const inp = inputGele();
-    if (!carteOuverte) {
-      if (inp.appuye(B.PAUSE) && !app.scene.hub) app.versHub();
-      app.scene.pas(inp);
-    }
+// ---------------------------------------------------------------- minicarte
+function dessinerMinicarte() {
+  const w = minicarte.width, h = minicarte.height;
+  mctx.clearRect(0, 0, w, h);
+  mctx.fillStyle = 'rgba(11,14,17,.82)';
+  mctx.fillRect(0, 0, w, h);
+  // repère : x de -110 à 110 → 0..w ; z de -150 à 125 → 0..h (le nord en haut)
+  const X = x => (x + 110) / 220 * w, Z = z => (z + 150) / 275 * h;
+  mctx.strokeStyle = '#223038'; mctx.lineWidth = 6;
+  mctx.beginPath(); mctx.moveTo(X(0), Z(120)); mctx.lineTo(X(0), Z(-116)); mctx.stroke();
+  for (const p of ville.portails) {
+    mctx.fillStyle = etat.cles.includes(p.id) ? p.accent.hex : 'rgba(0,0,0,0)';
+    mctx.strokeStyle = p.accent.hex; mctx.lineWidth = 1.5;
+    mctx.beginPath(); mctx.arc(X(p.x), Z(p.z), 4, 0, Math.PI * 2); mctx.fill(); mctx.stroke();
   }
-  app.scene.dessine(r);
-  if (carteOuverte) {
-    const c = r.ctx;
-    c.fillStyle = alpha(P.fond, 0.55);
-    c.fillRect(0, 0, VUE_W, VUE_H);
-  }
-  r.present();
+  mctx.save();
+  mctx.translate(X(sonde.pos.x), Z(sonde.pos.z));
+  mctx.rotate(-sonde.yaw);
+  mctx.fillStyle = P.sondeHex;
+  mctx.beginPath(); mctx.moveTo(0, -5); mctx.lineTo(3.5, 4); mctx.lineTo(-3.5, 4); mctx.closePath(); mctx.fill();
+  mctx.restore();
 }
 
-function inputGele() { input.poll(); return input; }
-
-// ---- dossier : la sortie de secours, toujours à un geste ----
-document.getElementById('btn-dossier').addEventListener('click', () => {
-  location.href = 'dossier.html';
-});
-addEventListener('keydown', e => {
-  if (e.code === 'KeyD' && !e.repeat && document.body.dataset.modal !== '1' &&
-      !(e.ctrlKey || e.metaKey || e.altKey)) {
-    // D ouvre le dossier seulement hors déplacement : on exige Maj+D
-    if (e.shiftKey) location.href = 'dossier.html';
+// ---------------------------------------------------------------- boucle
+let dernier = performance.now(), tVille = 0, images = 0;
+function boucle(now) {
+  images++;
+  if (!CAPTURE || images < CAPTURE[0]) requestAnimationFrame(boucle);
+  let dt = (now - dernier) / 1000; dernier = now;
+  if (dt > 0.1) dt = 0.1;
+  if (etat.mode !== 'ville') return;
+  tVille += dt;
+  const modal = document.body.dataset.modal === '1';
+  if (!modal) {
+    sonde.mettreAJour(dt);
+    verifierPortails();
+    if (portailProche && entrees.action()) entrerPortail(portailProche);
+    else entrees.action();
   }
-});
-
-charge();
-app.versHub();
-canvas.setAttribute('tabindex', '0');
+  ville.animer(tVille);
+  // en capture, rendu direct : le rendu logiciel headless ne sort rien du composer
+  if (CAPTURE) renderer.render(scene, camera); else composer.render();
+  dessinerMinicarte();
+}
 requestAnimationFrame(boucle);
+// en capture headless, requestAnimationFrame peut ne jamais tirer : on rend une image tout de suite
+if (CAPTURE) {
+  sonde.mettreAJour(1 / 60); ville.animer(0); verifierPortails();
+  renderer.render(scene, camera); dessinerMinicarte();
+  window.__capturePret = true;
+  setTimeout(() => { sonde.mettreAJour(1 / 60); renderer.render(scene, camera); }, 400);
+  // diagnostic headless : taille du canvas, appels de dessin, pixel central
+  try {
+    const gl = renderer.getContext();
+    const px = new Uint8Array(4);
+    gl.readPixels(Math.floor(gl.drawingBufferWidth / 2), Math.floor(gl.drawingBufferHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    window.__journal && window.__journal(`DIAG canvas ${renderer.domElement.width}x${renderer.domElement.height} style ${renderer.domElement.style.width}x${renderer.domElement.style.height} conteneur ${conteneur.clientWidth}x${conteneur.clientHeight} appels ${renderer.info.render.calls} tri ${renderer.info.render.triangles} pixel ${[...px].join(',')} cam ${camera.position.toArray().map(v => v.toFixed(1)).join(',')} sonde ${sonde.pos.toArray().map(v => v.toFixed(1)).join(',')}`);
+  } catch (e) { window.__journal && window.__journal('DIAG erreur ' + e.message); }
+}
 
-// diagnostic : accessible depuis la console, utile en recette
-window.__qsp = { app, NIVEAUX };
+// ---------------------------------------------------------------- liens
+el('btn-dossier').addEventListener('click', () => { location.href = 'dossier.html'; });
+addEventListener('keydown', e => {
+  if (e.code === 'KeyD' && e.shiftKey && !e.repeat) location.href = 'dossier.html';
+});
+
+// la tour est la destination : on l'indique une fois, au départ
+setTimeout(() => {
+  if (etat.cles.length) return;
+  invite.innerHTML = `Flèches pour voler · <kbd>Maj</kbd> accélère · six quartiers, du sud au nord`;
+  invite.hidden = false;
+  setTimeout(() => { if (!portailProche) invite.hidden = true; }, 6000);
+}, 800);
+
+window.__ville = { etat, sonde, ville, DISTRICTS, JEUX, lancerJeu, entrerPortail };
+// recette : ?panneau=<id> ouvre le relevé d'un quartier ; ?jeu=<id> lance son jeu dans la page
+if (PARAMS.get('panneau')) { const p = ville.portails.find(x => x.id === PARAMS.get('panneau')); p && entrerPortail(p); }
+if (PARAMS.get('jeu')) { const p = ville.portails.find(x => x.id === PARAMS.get('jeu')); const j = jeuPour(PARAMS.get('jeu')); p && j && lancerJeu(j, p); }

@@ -4,152 +4,136 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quelqu'un sur place — Corentin Bezille</title>
-<meta name="description" content="Le CV de Corentin Bezille sous forme de jeu : cinq postes, cinq méthodes, un incident à résoudre. Candidature Forward Deployed Engineer.">
+<meta name="description" content="Le CV de Corentin Bezille en jeu : une ville cyberpunk, six quartiers, six métiers de l'informatique et de la cybersécurité. Candidature Forward Deployed Engineer.">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0B0E11">
-
 <meta property="og:title" content="Quelqu'un sur place">
-<meta property="og:description" content="Un CV qui se joue. Cinq postes, cinq méthodes, un incident à résoudre à 02:14.">
-<meta property="og:type" content="website">
+<meta property="og:description" content="Une ville de nuit, six quartiers, un CV qui se joue.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;700;800&display=swap">
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
 
 <style>
 :root{
-  --fond:#0B0E11; --panneau:#11161B; --ligne:#2B3843;
-  --texte:#C8D3DA; --texte2:#7A8A96; --sonde:#FFB454; --trace:#46E6C8;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  --sans:"Archivo",system-ui,-apple-system,sans-serif;
+  --fond:#0B0E11; --panneau:#11161B; --ligne:#2B3843; --texte:#C8D3DA; --texte2:#7A8A96;
+  --sonde:#FFB454; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"Archivo",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{
-  margin:0;background:var(--fond);color:var(--texte);
-  font-family:var(--mono);font-size:14px;line-height:1.5;
-  overflow:hidden;-webkit-font-smoothing:antialiased;
-  display:flex;flex-direction:column;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
+body{margin:0;background:var(--fond);color:var(--texte);font:14px/1.5 var(--mono);overflow:hidden;
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 a{color:var(--sonde)}
+kbd{font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;padding:3px 5px;color:var(--texte);background:#0E1318}
 
-/* ---- barre ---- */
-.bar{
-  display:flex;align-items:center;gap:14px;flex:none;
-  padding:9px 14px;border-bottom:1px solid var(--ligne);background:var(--panneau);
-}
-.bar h1{
-  font-family:var(--sans);font-size:14px;font-weight:700;margin:0;letter-spacing:.01em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.bar{display:flex;align-items:center;gap:14px;flex:none;padding:9px 14px;border-bottom:1px solid var(--ligne);background:var(--panneau);z-index:3}
+.bar h1{font:800 14px/1 var(--sans);margin:0;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar h1 em{font-style:normal;color:var(--texte2);font-weight:600}
 .bar .sp{flex:1}
-.bar a,.bar button{
-  font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
-  color:var(--texte);background:transparent;border:1px solid var(--ligne);
-  border-radius:2px;padding:7px 11px;cursor:pointer;text-decoration:none;white-space:nowrap;
-}
-.bar a:hover,.bar button:hover{border-color:var(--sonde);color:var(--sonde)}
-.bar a.fort{background:var(--sonde);border-color:var(--sonde);color:#0B0E11}
-.bar a.fort:hover{opacity:.88;color:#0B0E11}
+.btn{font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--texte);
+  background:transparent;border:1px solid var(--ligne);border-radius:2px;padding:8px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--sonde);color:var(--sonde)}
+.btn.fort{background:var(--sonde);border-color:var(--sonde);color:#0B0E11}
+.btn.fort:hover{opacity:.88;color:#0B0E11}
+.btn:focus-visible{outline:2px solid #7FA3FF;outline-offset:2px}
 
-/* ---- scène ---- */
-.scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;
-  position:relative;background:#07090B;padding:6px}
-canvas{display:block;image-rendering:pixelated;outline:none}
-canvas:focus-visible{box-shadow:0 0 0 2px var(--sonde)}
+#scene{flex:1;min-height:0;position:relative;background:#07090B}
+#scene canvas{display:block}
 
-/* ---- aide clavier ---- */
-.aide{
-  flex:none;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;
-  padding:8px 14px;border-top:1px solid var(--ligne);
-  font-size:11px;color:var(--texte2);letter-spacing:.04em;
-}
-.aide b{color:var(--texte);font-weight:500}
-.aide kbd{
-  font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;
-  padding:3px 5px;color:var(--texte);background:#0E1318;
-}
+/* ---- HUD par-dessus la ville ---- */
+#hud{position:absolute;inset:0;pointer-events:none;z-index:2}
+#quartier{position:absolute;left:14px;top:12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--texte);
+  background:rgba(11,14,17,.78);padding:5px 9px;border-radius:2px;border-left:2px solid var(--sonde)}
+#cles{position:absolute;left:14px;top:40px;display:flex;gap:7px;background:rgba(11,14,17,.78);padding:6px 9px;border-radius:2px}
+.cle{width:9px;height:9px;border:1px solid var(--c);border-radius:1px;transform:rotate(45deg);opacity:.55}
+.cle.ok{background:var(--c);opacity:1;box-shadow:0 0 8px var(--c)}
+#minicarte{position:absolute;right:14px;top:12px;width:96px;height:120px;border:1px solid var(--ligne);border-radius:2px}
+#invite{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(11,14,17,.86);
+  border:1px solid var(--ligne);border-left:3px solid var(--sonde);border-radius:2px;padding:9px 14px;font-size:13px;white-space:nowrap}
+#invite[hidden]{display:none}
+
+/* ---- panneau (relevé, résultat) ---- */
+#panneau{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.72);z-index:6;padding:20px}
+#panneau[hidden]{display:none}
+.pan-in{background:var(--panneau);border:1px solid var(--ligne);border-radius:3px;max-width:600px;width:100%;padding:22px 24px;max-height:92%;overflow:auto}
+.pan-k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;color:var(--sonde)}
+.pan-in h2{font:700 19px/1.2 var(--sans);margin:0 0 3px;letter-spacing:-.01em}
+.pan-in h2 span{font:400 12px var(--mono);color:var(--texte2);margin-left:8px}
+.pan-p{color:var(--texte2);font-size:12.5px;margin:0 0 14px}
+.pan-in p{margin:0 0 12px;font-size:13.5px;line-height:1.62}
+.pan-w{border-top:1px solid var(--ligne);padding-top:12px;color:var(--texte2)}
+.pan-w b,.pan-j b{color:var(--texte)}
+.pan-j{background:#0B0E11;border:1px solid var(--ligne);border-radius:2px;padding:10px 12px;font-size:13px}
+.pan-btns{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+
+/* ---- conteneur d'un jeu ---- */
+#jeu{position:absolute;inset:0;z-index:5;background:#07090C}
+#jeu[hidden]{display:none}
 
 /* ---- pad tactile ---- */
-#pad{display:none;flex:none;height:112px;position:relative;touch-action:none;border-top:1px solid var(--ligne)}
-#pad .z{position:absolute;border:1px solid var(--ligne);border-radius:4px;
-  display:flex;align-items:center;justify-content:center;
-  font:600 11px/1 var(--mono);letter-spacing:.08em;color:var(--texte2);background:#0E1318}
-#pad .gauche{left:10px;right:50%;top:8px;bottom:8px;margin-right:6px}
-#pad .saut{right:10px;width:104px;bottom:8px;height:52px}
-#pad .tr{right:10px;width:104px;top:8px;height:44px}
+#pad{display:none;position:absolute;inset:0;z-index:4;pointer-events:none}
+#pad .joy{position:absolute;left:0;bottom:0;width:50%;height:46%;pointer-events:auto;touch-action:none}
+#pad .act{position:absolute;right:18px;bottom:18px;width:74px;height:74px;border-radius:50%;pointer-events:auto;touch-action:none;
+  border:1px solid var(--sonde);background:rgba(255,180,84,.14);color:var(--sonde);font:600 11px var(--mono);letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center}
 @media (pointer:coarse){ #pad{display:block} .aide{display:none} }
-/* l'aide clavier ne tient pas sous 720 px : elle n'y sert à personne */
-@media (max-width:720px){ .aide{display:none} }
 
-/* ---- carte de relevé ---- */
-#releve{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(5,7,10,.78);z-index:20;padding:20px}
-#releve[hidden]{display:none}
-.rel-in{
-  background:var(--panneau);border:1px solid var(--ligne);border-left:3px solid var(--acc,var(--sonde));
-  border-radius:3px;max-width:560px;width:100%;padding:22px 24px;
-}
-.rel-k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc,var(--sonde));margin:0 0 10px}
-.rel-in h2{font-family:var(--sans);font-size:19px;margin:0 0 2px;letter-spacing:-.01em}
-.rel-in h2 span{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--texte2);margin-left:8px}
-.rel-p{color:var(--texte2);font-size:12.5px;margin:0 0 14px}
-.rel-in p{margin:0 0 12px;font-size:13.5px;line-height:1.62}
-.rel-w{border-top:1px solid var(--ligne);padding-top:12px;color:var(--texte2)}
-.rel-w b{color:var(--texte)}
-.rel-b{
-  font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
-  background:var(--acc,var(--sonde));color:#0B0E11;border:0;border-radius:2px;
-  padding:11px 18px;cursor:pointer;margin-top:4px;
-}
-.rel-b:hover{opacity:.88}
+.aide{flex:none;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;padding:8px 14px;border-top:1px solid var(--ligne);
+  font-size:11px;color:var(--texte2);letter-spacing:.04em}
+.aide b{color:var(--texte);font-weight:500}
+@media (max-width:720px){ .aide{display:none} .bar h1 em{display:none} }
 
-/* ---- repli sans JavaScript ou sans canvas ---- */
 #repli{padding:28px 20px;text-align:center;color:var(--texte2);max-width:560px;margin:auto}
-#repli h2{font-family:var(--sans);color:var(--texte);font-size:18px;margin:0 0 10px}
-
-@media (max-width:560px){ .bar h1 em{display:none} }
+#repli h2{font:700 18px var(--sans);color:var(--texte);margin:0 0 10px}
 </style>
 </head>
 <body>
 
 <header class="bar">
-  <h1>Quelqu'un sur place <em>— le CV de Corentin Bezille, en jeu</em></h1>
+  <h1>Quelqu'un sur place <em>— le CV de Corentin Bezille, en ville</em></h1>
   <span class="sp"></span>
-  <button id="btn-dossier" type="button">Dossier</button>
-  <a href="cv.html">CV</a>
-  <a class="fort" href="mailto:corentin.bezille1756@gmail.com?subject=Forward%20Deployed%20Engineer">Écrire</a>
+  <button id="btn-dossier" class="btn" type="button">Dossier</button>
+  <a class="btn" href="cv.html">CV</a>
+  <a class="btn fort" href="mailto:corentin.bezille1756@gmail.com?subject=Forward%20Deployed%20Engineer">Écrire</a>
 </header>
 
-<div class="scene">
-  <canvas id="jeu" width="480" height="270" aria-label="Jeu de plateforme. Le contenu du CV est aussi lisible dans le dossier."></canvas>
-  <noscript>
-    <div id="repli">
-      <h2>Le jeu a besoin de JavaScript</h2>
-      <p>Tout le contenu est lisible sans lui : <a href="dossier.html">ouvrir le dossier</a>
-      ou <a href="cv.html">le CV</a>.</p>
-    </div>
-  </noscript>
-</div>
-
-<div id="pad" aria-hidden="true">
-  <div class="z gauche">déplacer</div>
-  <div class="z tr">trace</div>
-  <div class="z saut">saut · impulsion</div>
+<div id="scene">
+  <div id="hud">
+    <div id="quartier"></div>
+    <div id="cles"></div>
+    <canvas id="minicarte" width="96" height="120" aria-hidden="true"></canvas>
+    <div id="invite" hidden></div>
+  </div>
+  <div id="pad" aria-hidden="true"><div class="joy"></div><div class="act">ENTRER</div></div>
+  <div id="panneau" hidden></div>
+  <div id="jeu" hidden></div>
+  <noscript><div id="repli"><h2>La ville a besoin de JavaScript</h2>
+    <p>Tout le contenu se lit sans lui : <a href="dossier.html">ouvrir le dossier</a> ou <a href="cv.html">le CV</a>.</p></div></noscript>
 </div>
 
 <div class="aide">
-  <span><kbd>←</kbd><kbd>→</kbd> <b>avancer</b></span>
-  <span><kbd>Espace</kbd> <b>sauter</b>, puis à nouveau en l'air : <b>impulsion</b></span>
-  <span><kbd>Maj</kbd> <b>lire les journaux</b></span>
-  <span><kbd>Échap</kbd> <b>retour</b></span>
+  <span><kbd>←</kbd><kbd>→</kbd> <b>tourner</b> · <kbd>↑</kbd><kbd>↓</kbd> <b>avancer</b></span>
+  <span><kbd>Maj</kbd> <b>accélérer</b></span>
+  <span><kbd>Espace</kbd> <b>entrer dans un quartier</b></span>
   <span><kbd>Maj</kbd>+<kbd>D</kbd> <b>dossier</b></span>
 </div>
 
-<div id="releve" hidden tabindex="-1"></div>
-
+<pre id="journal" hidden></pre>
+<script>
+  // Journal d'erreurs dans le DOM : lisible en headless par --dump-dom, quand aucune console n'est visible.
+  (function(){ const j=document.getElementById('journal'); const ecrire=m=>{ j.textContent += m + String.fromCharCode(10); };
+    addEventListener('error', e => ecrire('ERREUR ' + (e.message||'') + ' @' + (e.filename||'') + ':' + (e.lineno||'')));
+    addEventListener('unhandledrejection', e => ecrire('REJET ' + String(e.reason && (e.reason.stack || e.reason.message || e.reason))));
+    window.__journal = ecrire; })();
+</script>
 <script type="module" src="src/main.js"></script>
 </body>
 </html>

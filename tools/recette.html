@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Recette des jeux</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+body{background:#0B0E11;color:#C8D3DA;font:13px/1.6 ui-monospace,monospace;margin:0;padding:16px}
+.ok{color:#6FCF8E}.ko{color:#E8503A}h1{font-size:15px;margin:0 0 10px}
+#bac{position:relative;width:960px;height:560px;border:1px solid #2B3843;margin-top:12px;overflow:hidden}
+</style></head><body>
+<h1>Recette des jeux — chaque jeu doit se monter, se résoudre seul et se démonter proprement</h1>
+<pre id="out">…</pre>
+<pre id="journal"></pre>
+<div id="bac"></div>
+<script>
+  // Chaque erreur globale va dans le journal : lisible en headless par --dump-dom.
+  addEventListener('error', e => { document.getElementById('journal').textContent += 'ERREUR ' + e.message + ' @' + e.filename + ':' + e.lineno + '\n'; });
+  addEventListener('unhandledrejection', e => { document.getElementById('journal').textContent += 'REJET ' + String(e.reason && (e.reason.stack || e.reason.message || e.reason)) + '\n'; });
+</script>
+<script type="module">
+import { JEUX } from '../src/jeux/index.js';
+import { valider } from '../src/jeux/_contrat.js';
+import { FAITS } from '../src/cv.js';
+
+const params = new URLSearchParams(location.search);
+const seul = params.get('jeu');
+const lignes = [];
+const out = document.getElementById('out');
+const bac = document.getElementById('bac');
+const ligne = (ok, txt) => { lignes.push(`${ok ? 'PASS' : 'FAIL'}  ${txt}`); out.textContent = lignes.join('\n'); };
+
+async function tester(j) {
+  const err = valider(j);
+  if (err.length) { ligne(false, `contrat  ${j.id} :: ${err.join(' · ')}`); return; }
+  ligne(true, `contrat  ${j.id}`);
+
+  bac.innerHTML = '';
+  let fini = null, abandon = false;
+  const api = {
+    FAITS, accent: j.accent,
+    fini(r) { fini = r || {}; },
+    abandonner() { abandon = true; },
+  };
+  let inst;
+  const t0 = performance.now();
+  try { inst = j.monter(bac, api) || {}; }
+  catch (e) { ligne(false, `montage  ${j.id} :: ${e.message}`); return; }
+  ligne(!!bac.firstChild, `montage  ${j.id} :: ${bac.children.length} enfant(s) dans le conteneur`);
+  if (typeof inst.resoudre !== 'function') { ligne(false, `resoudre ${j.id} :: absent`); }
+  else {
+    try {
+      await Promise.race([inst.resoudre(), new Promise((_, rej) => setTimeout(() => rej(new Error('20 s dépassées')), 20000))]);
+      // laisse le temps aux enchaînements asynchrones de conclure
+      for (let k = 0; k < 40 && !fini; k++) await new Promise(r => setTimeout(r, 50));
+      ligne(!!fini, `resoudre ${j.id} :: ${fini ? 'api.fini appelé en ' + Math.round(performance.now() - t0) + ' ms' + (fini.message ? ' — ' + fini.message : '') : 'api.fini jamais appelé'}`);
+    } catch (e) { ligne(false, `resoudre ${j.id} :: ${e.message}`); }
+  }
+  try { inst.demonter && inst.demonter(); ligne(bac.children.length === 0, `demonter ${j.id} :: ${bac.children.length} enfant(s) restant(s)`); }
+  catch (e) { ligne(false, `demonter ${j.id} :: ${e.message}`); }
+}
+
+// ?fichier=../src/jeux/x.js : un module hors registre (un jeu en cours d'écriture)
+// ?apercu=1 : monte le jeu et s'arrête là, pour une capture d'écran
+const fichier = params.get('fichier');
+let liste;
+if (fichier) { const m = await import(fichier); liste = [m.default]; }
+else liste = seul ? JEUX.filter(j => j.id === seul) : JEUX;
+if (params.get('apercu') && liste.length) {
+  bac.style.width = '100%'; bac.style.height = 'calc(100vh - 32px)';
+  out.hidden = true; document.body.style.padding = '8px';
+  liste[0].monter(bac, { FAITS, accent: liste[0].accent, fini() {}, abandonner() {} });
+  document.title = 'APERCU ' + liste[0].id;
+  throw new Error('APERCU_STOP');
+}
+if (!liste.length) ligne(false, `aucun jeu ${seul ? '« ' + seul + ' »' : 'dans le registre'}`);
+for (const j of liste) await tester(j);
+const echecs = lignes.filter(l => l.startsWith('FAIL')).length;
+lignes.push(echecs ? `\n${echecs} échec(s).` : `\nTout passe (${liste.length} jeu(x)).`);
+out.textContent = lignes.join('\n');
+document.title = echecs ? 'RECETTE KO' : 'RECETTE OK';
+</script></body></html>
