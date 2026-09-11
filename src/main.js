@@ -31,19 +31,23 @@ const conteneur = document.getElementById('scene');
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
 renderer.toneMapping = SANS.has('tone') ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.25;
 conteneur.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 construireCiel(scene);
-if (!SANS.has('fog')) scene.fog = new THREE.FogExp2(0x1a1420, 0.0082);
+if (!SANS.has('fog')) scene.fog = new THREE.FogExp2(0x4a3652, 0.0062);
 
 const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 700);
 // lumière : un ciel chaud de fin de journée, un sol froid, et un soleil bas au nord-ouest
-scene.add(new THREE.HemisphereLight(0x6a4050, 0x0a1016, 1.7));
-const soleil = new THREE.DirectionalLight(0xffa46a, 1.7);
+scene.add(new THREE.HemisphereLight(0xb890a8, 0x33302f, 2.1));
+const soleil = new THREE.DirectionalLight(0xffb070, 2.6);
 soleil.position.set(-90, 55, -70);
 scene.add(soleil);
+// un contre-jour froid depuis l'autre côté, pour que les faces à l'ombre ne soient pas noires
+const contre = new THREE.DirectionalLight(0x6aa8c8, 0.8);
+contre.position.set(80, 40, 90);
+scene.add(contre);
 
 const ville = construireVille(scene, { miroir: !SANS.has('miroir') });
 const entrees = creerEntrees(document.getElementById('pad'));
@@ -53,7 +57,7 @@ if (CAPTURE && CAPTURE.length >= 3) sonde.teleporter(CAPTURE[1], CAPTURE[2], CAP
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.65, 0.72);
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.6, 0.78);
 if (!CAPTURE) composer.addPass(bloom);
 composer.addPass(new OutputPass());
 

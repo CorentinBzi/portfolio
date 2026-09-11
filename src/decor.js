@@ -3,6 +3,7 @@
 // Chaque famille de détails est une InstancedMesh : un seul appel de dessin.
 
 import * as THREE from 'three';
+import { vitrine as texVitrine } from './textures.js';
 
 // ---------------------------------------------------------------- ciel
 // Un dôme avec une texture peinte : nuit au zénith, lueur chaude de fin de
@@ -11,13 +12,13 @@ export function construireCiel(scene) {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#04060b'); grad.addColorStop(0.32, '#0b1020');
-  grad.addColorStop(0.48, '#2a1c2e'); grad.addColorStop(0.53, '#1b1420'); grad.addColorStop(1, '#0b0a10');
+  grad.addColorStop(0, '#141a36'); grad.addColorStop(0.30, '#2c2856');
+  grad.addColorStop(0.46, '#6e3c62'); grad.addColorStop(0.52, '#4e3450'); grad.addColorStop(1, '#2a2232');
   g.fillStyle = grad; g.fillRect(0, 0, 1024, 512);
 
   const chaud = g.createRadialGradient(760, 262, 6, 760, 262, 460);
-  chaud.addColorStop(0, 'rgba(255,150,90,0.95)'); chaud.addColorStop(0.18, 'rgba(240,100,110,0.55)');
-  chaud.addColorStop(0.5, 'rgba(140,60,100,0.20)'); chaud.addColorStop(1, 'rgba(0,0,0,0)');
+  chaud.addColorStop(0, 'rgba(255,190,120,1)'); chaud.addColorStop(0.16, 'rgba(255,130,110,0.75)');
+  chaud.addColorStop(0.5, 'rgba(180,80,120,0.30)'); chaud.addColorStop(1, 'rgba(0,0,0,0)');
   g.fillStyle = chaud; g.fillRect(0, 0, 1024, 512);
 
   const froid = g.createRadialGradient(230, 300, 6, 230, 300, 400);
@@ -28,7 +29,7 @@ export function construireCiel(scene) {
   let graine = 11; const r = () => { graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
   for (let x = 0; x < 1024;) {
     const w = 6 + r() * 26, h = 12 + r() * 70;
-    g.fillStyle = '#0e0b13'; g.fillRect(x, 258 - h, w, h + 80);
+    g.fillStyle = '#231a30'; g.fillRect(x, 258 - h, w, h + 80);
     for (let y = 262 - h; y < 256; y += 5) if (r() < 0.16) { g.fillStyle = r() < 0.5 ? '#ff9a5c' : '#46e6c8'; g.globalAlpha = 0.5 + r() * 0.5; g.fillRect(x + 2 + r() * (w - 4), y, 1.5, 2); g.globalAlpha = 1; }
     x += w + r() * 14;
   }
@@ -117,12 +118,12 @@ export function ajouterDetails(groupe, batiments, rnd, { PAS, BLOC, GRILLE_Z, po
   // (ils sont ajoutés à `batiments` par l'appelant ; ici on ne fait que le mobilier)
 
   // vitrines et auvents au rez-de-chaussée, côté avenue
-  const vitrineCouleurs = [0x2fd6c9, 0xff9a5c, 0xe84fd1, 0xf2d13b, 0x5aa9e6];
+  const vitrineCouleurs = [['#2fd6c9', 'RAMEN'], ['#ff9a5c', 'BAR'], ['#e84fd1', 'KARAOKE'], ['#f2d13b', 'MARKET'], ['#5aa9e6', 'PHARMA'], ['#9b7cff', 'CAFE']];
   const auvent = new THREE.MeshStandardMaterial({ map: textureRayures('#d9552f', '#f3e2b3'), roughness: 0.9 });
   const auvent2 = new THREE.MeshStandardMaterial({ map: textureRayures('#1f6f78', '#e8eef2'), roughness: 0.9 });
   // Vitrines et auvents sont instanciés par couleur : sept appels de dessin au lieu de cent.
   const plan = new THREE.PlaneGeometry(1, 1);
-  const vitrineInst = vitrineCouleurs.map(c => instancie(plan, new THREE.MeshBasicMaterial({ color: c, toneMapped: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide }), 40));
+  const vitrineInst = vitrineCouleurs.map(([c, mot]) => instancie(plan, new THREE.MeshBasicMaterial({ map: texVitrine(c, mot), toneMapped: false, side: THREE.DoubleSide }), 40));
   const auventGeo = new THREE.BoxGeometry(1.3, 0.08, 1);
   const auventInst = [instancie(auventGeo, auvent, 60), instancie(auventGeo, auvent2, 60)];
   const placeIncline = (inst, i, x, y, z, sx, sy, sz, ry, rz) => {
@@ -136,9 +137,9 @@ export function ajouterDetails(groupe, batiments, rnd, { PAS, BLOC, GRILLE_Z, po
     const face = b.x < 0 ? 1 : -1;
     const nV = 1 + Math.floor(rnd() * 2);
     for (let i = 0; i < nV; i++) {
-      const w = 2.6 + rnd() * 1.6, z = b.z + (i - (nV - 1) / 2) * 4.2;
+      const w = 3.2 + rnd() * 1.2, z = b.z + (i - (nV - 1) / 2) * 4.4;
       const vi = vitrineInst[Math.floor(rnd() * vitrineInst.length)];
-      if (vi.count < 40) place(vi, vi.count++, b.x + face * (b.w / 2 + 0.06), 1.45, z, w, 1.9, 1, face === 1 ? Math.PI / 2 : -Math.PI / 2);
+      if (vi.count < 40) place(vi, vi.count++, b.x + face * (b.w / 2 + 0.06), 1.35, z, w, w / 2, 1, face === 1 ? Math.PI / 2 : -Math.PI / 2);
       const ai = auventInst[rnd() < 0.55 ? 0 : 1];
       if (ai.count < 60) placeIncline(ai, ai.count++, b.x + face * (b.w / 2 + 0.7), 2.75, z, 1, 1, w + 0.4, 0, face * 0.32);
       // quelques lampes chaudes sous les auvents ; pas plus de six, le shader les paie toutes
@@ -226,7 +227,7 @@ export function ajouterDetails(groupe, batiments, rnd, { PAS, BLOC, GRILLE_Z, po
 
   // faisceaux de lumière : quelques cônes additifs, comme des projecteurs dans la brume
   const faisceaux = [];
-  const faisceauMat = (col) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false });
+  const faisceauMat = (col) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false });
   for (const [x, z, col] of [[-30, 30, 0xffc080], [34, -20, 0x8fd6ff], [-26, -66, 0xffa8c0]]) {
     const f = new THREE.Mesh(new THREE.ConeGeometry(9, 42, 18, 1, true), faisceauMat(col));
     f.position.set(x, 24, z); f.rotation.z = (x < 0 ? -1 : 1) * 0.55; f.rotation.x = 0.35;

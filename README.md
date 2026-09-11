@@ -49,6 +49,10 @@ src/main.js           rendu, bloom, portails, passage ville -> jeu -> ville, min
 src/ville.js          la ville : blocs, arêtes néon, enseignes, rails, véhicules, portails
 src/decor.js          le ciel peint, et les détails instanciés : toits, balcons, tuyaux, câbles,
                       passerelles, vitrines, auvents, lianes, faisceaux
+src/textures.js       façades (brique, béton, tôle, verre), toits, trottoirs, asphalte, affiches, devantures
+src/mobilier.js       lampadaires, poubelles, bancs, bornes, abribus, distributeurs, caisses, voitures,
+                      bennes, cônes, échafaudages, affiches, bannières — tout instancié
+src/pnj.js            les passants : silhouettes de boîtes instanciées par membre, animées
 src/enseignes.js      textures d'enseignes dessinées sur canvas
 src/sonde.js          la sonde, ses commandes, la caméra
 src/entrees.js        clavier, manette, joystick tactile
