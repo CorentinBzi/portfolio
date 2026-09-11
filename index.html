@@ -2,622 +2,151 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Corentin Bezille — Forward Deployed Engineer</title>
-<meta name="description" content="Diagnostiquer un système critique quand plusieurs couches peuvent être en cause, et l'expliquer à quelqu'un qui n'est pas technicien. Quatre fois où je l'ai déjà fait.">
-<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quelqu'un sur place — Corentin Bezille</title>
+<meta name="description" content="Le CV de Corentin Bezille sous forme de jeu : cinq postes, cinq méthodes, un incident à résoudre. Candidature Forward Deployed Engineer.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0B0E11">
 
-<meta property="og:title" content="Corentin Bezille — Forward Deployed Engineer">
-<meta property="og:description" content="Un système critique tombe, plusieurs couches peuvent être en cause, quelqu'un attend une réponse claire tout de suite.">
-<meta property="og:type" content="profile">
+<meta property="og:title" content="Quelqu'un sur place">
+<meta property="og:description" content="Un CV qui se joue. Cinq postes, cinq méthodes, un incident à résoudre à 02:14.">
+<meta property="og:type" content="website">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;700&display=swap">
 
 <style>
 :root{
-  --paper:#F6F7F9;
-  --card:#FFFFFF;
-  --ink:#0F141B;
-  --ink-2:#525C6B;
-  --ink-3:#6C7686;
-  --rule:#DCE1E8;
-  --rule-2:#C3CAD4;
-  --signal:#A85B07;
-  --signal-soft:#F9EFE1;
-  --resolved:#0E6A57;
-  --resolved-soft:#E3F0EC;
-  --focus:#1F4FD8;
-
-  --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --fond:#0B0E11; --panneau:#11161B; --ligne:#2B3843;
+  --texte:#C8D3DA; --texte2:#7A8A96; --sonde:#FFB454; --trace:#46E6C8;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --sans:"Archivo",system-ui,-apple-system,sans-serif;
 }
-@media (prefers-color-scheme:dark){
-  :root{
-    --paper:#101419;
-    --card:#161C23;
-    --ink:#E8ECF1;
-    --ink-2:#A2ACB9;
-    --ink-3:#8B95A3;
-    --rule:#252C35;
-    --rule-2:#39424E;
-    --signal:#E8A05C;
-    --signal-soft:#2A2015;
-    --resolved:#63C7AF;
-    --resolved-soft:#122620;
-    --focus:#7FA3FF;
-  }
-}
-
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
 body{
-  margin:0;
-  background:var(--paper);
-  color:var(--ink);
-  font-family:var(--serif);
-  font-size:17px;
-  line-height:1.62;
-  -webkit-font-smoothing:antialiased;
+  margin:0;background:var(--fond);color:var(--texte);
+  font-family:var(--mono);font-size:14px;line-height:1.5;
+  overflow:hidden;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-a{color:inherit}
-a:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}
-::selection{background:var(--signal-soft);color:var(--ink)}
+a{color:var(--sonde)}
 
-.shell{max-width:980px;margin:0 auto;padding:0 24px}
+/* ---- barre ---- */
+.bar{
+  display:flex;align-items:center;gap:14px;flex:none;
+  padding:9px 14px;border-bottom:1px solid var(--ligne);background:var(--panneau);
+}
+.bar h1{
+  font-family:var(--sans);font-size:14px;font-weight:700;margin:0;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.bar h1 em{font-style:normal;color:var(--texte2);font-weight:600}
+.bar .sp{flex:1}
+.bar a,.bar button{
+  font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--texte);background:transparent;border:1px solid var(--ligne);
+  border-radius:2px;padding:7px 11px;cursor:pointer;text-decoration:none;white-space:nowrap;
+}
+.bar a:hover,.bar button:hover{border-color:var(--sonde);color:var(--sonde)}
+.bar a.fort{background:var(--sonde);border-color:var(--sonde);color:#0B0E11}
+.bar a.fort:hover{opacity:.88;color:#0B0E11}
 
-/* ---------- en-tête ---------- */
-.topbar{
-  border-bottom:1px solid var(--rule);
-  background:var(--paper);
-  position:sticky;top:0;z-index:20;
-}
-.topbar .shell{
-  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;
-  gap:10px;padding-top:14px;padding-bottom:13px;
-}
-.wordmark{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:-.01em}
-.wordmark span{color:var(--ink-3);font-weight:500}
-.availability{
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--ink-2);display:flex;align-items:center;gap:8px;
-}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--resolved);flex:none}
+/* ---- scène ---- */
+.scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;background:#07090B}
+canvas{display:block;image-rendering:pixelated;outline:none}
+canvas:focus-visible{box-shadow:0 0 0 2px var(--sonde)}
 
-/* ---------- l'appel ---------- */
-.call{padding:72px 0 8px}
-.eyebrow{
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--signal);margin:0 0 26px;
+/* ---- aide clavier ---- */
+.aide{
+  flex:none;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;
+  padding:8px 14px;border-top:1px solid var(--ligne);
+  font-size:11px;color:var(--texte2);letter-spacing:.04em;
 }
-.scene{
-  display:grid;grid-template-columns:92px 1fr;gap:0 26px;align-items:start;
-  border-left:2px solid var(--signal);padding-left:0;margin-left:0;
-}
-.stamp{
-  font-family:var(--mono);font-size:13px;font-weight:500;color:var(--signal);
-  padding:6px 0 0 18px;line-height:1.4;letter-spacing:.02em;
-}
-.stamp b{display:block;font-size:22px;font-weight:500;letter-spacing:-.02em}
-.scene p{margin:0 0 18px;font-size:clamp(20px,2.9vw,27px);line-height:1.42;letter-spacing:-.012em}
-.scene p:last-child{margin-bottom:0}
-.scene .soft{color:var(--ink-2);font-size:clamp(17px,2.1vw,20px);line-height:1.55}
-
-.answer{
-  margin:38px 0 0;padding:24px 26px;background:var(--card);
-  border:1px solid var(--rule);border-left:3px solid var(--resolved);border-radius:3px;
-}
-.answer p{margin:0;font-size:18.5px;line-height:1.58}
-.answer p + p{margin-top:14px}
-.answer strong{font-weight:600}
-
-.caveat{
-  margin:22px 0 0;font-family:var(--sans);font-size:14.5px;line-height:1.6;
-  color:var(--ink-2);max-width:74ch;
-}
-.caveat b{color:var(--ink);font-weight:600}
-
-/* ---------- la boucle ---------- */
-.loop{margin:66px 0 0;border-top:1px solid var(--rule);padding-top:34px}
-.loop-title{
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink-3);margin:0 0 22px;
-}
-.steps{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:0;
-  border-top:2px solid var(--rule-2);
-}
-.step{padding:16px 16px 4px 0;position:relative}
-.step::before{
-  content:"";position:absolute;top:-2px;left:0;width:9px;height:9px;
-  background:var(--signal);transform:translateY(-50%) rotate(45deg);
-}
-.step:nth-child(4)::before,.step:nth-child(5)::before{background:var(--resolved)}
-.step h3{
-  font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.01em;
-  margin:0 0 6px;text-transform:uppercase;
-}
-.step p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2);font-family:var(--sans)}
-
-/* ---------- dossiers ---------- */
-.section{margin:88px 0 0}
-.section-head{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:0}
-.section-head h2{
-  font-family:var(--sans);font-size:clamp(21px,3vw,27px);font-weight:700;
-  letter-spacing:-.02em;margin:0;
-}
-.section-head .lede{
-  margin:10px 0 0;color:var(--ink-2);font-size:17px;max-width:70ch;
+.aide b{color:var(--texte);font-weight:500}
+.aide kbd{
+  font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;
+  padding:3px 5px;color:var(--texte);background:#0E1318;
 }
 
-.case{border-bottom:1px solid var(--rule);padding:34px 0}
-.case-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:16px}
-.case-tag{
-  font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--signal);background:var(--signal-soft);padding:4px 9px;border-radius:2px;white-space:nowrap;
-}
-.case-tag.done{color:var(--resolved);background:var(--resolved-soft)}
-.case-top h3{
-  font-family:var(--sans);font-size:clamp(18px,2.3vw,22px);font-weight:600;
-  letter-spacing:-.015em;margin:0;flex:1 1 320px;
-}
-.case-meta{
-  font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.02em;
-  width:100%;margin-top:-4px;
-}
-.case-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 40px}
-.field h4{
-  font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--ink-3);margin:0 0 6px;
-}
-.field p{margin:0;font-size:16.5px;line-height:1.56}
-.field.wide{grid-column:1 / -1}
-.outcome{
-  grid-column:1 / -1;border-left:3px solid var(--resolved);padding:2px 0 2px 16px;margin-top:2px;
-}
-.outcome h4{color:var(--resolved)}
-.trace{
-  grid-column:1 / -1;font-family:var(--mono);font-size:12.5px;line-height:1.75;
-  color:var(--ink-2);background:var(--card);border:1px solid var(--rule);
-  border-radius:3px;padding:14px 16px;overflow-x:auto;white-space:pre;
-}
-.trace i{font-style:normal;color:var(--signal)}
-.trace b{font-weight:500;color:var(--resolved)}
+/* ---- pad tactile ---- */
+#pad{display:none;flex:none;height:112px;position:relative;touch-action:none;border-top:1px solid var(--ligne)}
+#pad .z{position:absolute;border:1px solid var(--ligne);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font:600 11px/1 var(--mono);letter-spacing:.08em;color:var(--texte2);background:#0E1318}
+#pad .gauche{left:10px;right:50%;top:8px;bottom:8px;margin-right:6px}
+#pad .saut{right:10px;width:104px;bottom:8px;height:52px}
+#pad .tr{right:10px;width:104px;top:8px;height:44px}
+@media (pointer:coarse){ #pad{display:block} .aide{display:none} }
 
-/* ---------- stack ---------- */
-.stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:30px}
-.col{padding:0 24px 4px 0;border-right:1px solid var(--rule)}
-.col:last-child{border-right:0;padding-right:0}
-.col h3{
-  font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.07em;
-  text-transform:uppercase;margin:0 0 4px;
+/* ---- carte de relevé ---- */
+#releve{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(5,7,10,.78);z-index:20;padding:20px}
+#releve[hidden]{display:none}
+.rel-in{
+  background:var(--panneau);border:1px solid var(--ligne);border-left:3px solid var(--acc,var(--sonde));
+  border-radius:3px;max-width:560px;width:100%;padding:22px 24px;
 }
-.col.solid h3{color:var(--resolved)}
-.col.ok h3{color:var(--ink-2)}
-.col.learn h3{color:var(--signal)}
-.col .hint{font-family:var(--sans);font-size:13.5px;color:var(--ink-3);margin:0 0 14px;line-height:1.45}
-.col ul{margin:0;padding:0;list-style:none}
-.col li{
-  font-family:var(--sans);font-size:15px;line-height:1.45;padding:7px 0;
-  border-top:1px solid var(--rule);
+.rel-k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc,var(--sonde));margin:0 0 10px}
+.rel-in h2{font-family:var(--sans);font-size:19px;margin:0 0 2px;letter-spacing:-.01em}
+.rel-in h2 span{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--texte2);margin-left:8px}
+.rel-p{color:var(--texte2);font-size:12.5px;margin:0 0 14px}
+.rel-in p{margin:0 0 12px;font-size:13.5px;line-height:1.62}
+.rel-w{border-top:1px solid var(--ligne);padding-top:12px;color:var(--texte2)}
+.rel-w b{color:var(--texte)}
+.rel-b{
+  font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  background:var(--acc,var(--sonde));color:#0B0E11;border:0;border-radius:2px;
+  padding:11px 18px;cursor:pointer;margin-top:4px;
 }
-.col li:first-child{border-top:0}
+.rel-b:hover{opacity:.88}
 
-/* ---------- parcours ---------- */
-.track{margin-top:26px}
-.job{
-  display:grid;grid-template-columns:150px 1fr;gap:4px 26px;
-  padding:18px 0;border-bottom:1px solid var(--rule);align-items:baseline;
-}
-.job .when{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);letter-spacing:.02em}
-.job h3{font-family:var(--sans);font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
-.job .where{font-family:var(--sans);font-size:14.5px;color:var(--ink-2);margin:2px 0 0}
-.job p.what{margin:8px 0 0;font-size:16px;color:var(--ink-2);line-height:1.55;grid-column:2}
-.job .what b{color:var(--ink);font-weight:600}
+/* ---- repli sans JavaScript ou sans canvas ---- */
+#repli{padding:28px 20px;text-align:center;color:var(--texte2);max-width:560px;margin:auto}
+#repli h2{font-family:var(--sans);color:var(--texte);font-size:18px;margin:0 0 10px}
 
-/* ---------- contact ---------- */
-.outro{margin:92px 0 0;border-top:2px solid var(--ink);padding:38px 0 96px}
-.outro h2{font-family:var(--sans);font-size:clamp(22px,3.2vw,30px);font-weight:700;letter-spacing:-.02em;margin:0 0 14px}
-.outro p{margin:0 0 26px;font-size:18px;color:var(--ink-2);max-width:62ch}
-.links{display:flex;flex-wrap:wrap;gap:10px}
-.link{
-  font-family:var(--sans);font-size:15px;font-weight:600;text-decoration:none;
-  padding:11px 18px;border:1px solid var(--rule-2);border-radius:3px;
-  display:inline-flex;align-items:center;gap:9px;background:var(--card);
-  transition:border-color .15s ease,transform .15s ease;
-}
-.link:hover{border-color:var(--ink);transform:translateY(-1px)}
-.link.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.link.primary:hover{opacity:.88}
-.link small{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--ink-3);letter-spacing:.02em}
-.link.primary small{color:var(--paper);opacity:.7}
-.colophon{
-  margin-top:34px;font-family:var(--mono);font-size:11.5px;line-height:1.7;
-  color:var(--ink-3);letter-spacing:.02em;
-}
-
-/* ---------- apparition ---------- */
-/* Sans JavaScript, rien ne se cache : la classe .js n'est posée que si le script tourne. */
-.js .rise{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
-.js .rise.seen{opacity:1;transform:none}
-
-@media (max-width:820px){
-  .steps{grid-template-columns:repeat(2,1fr);border-top:0}
-  .step{border-top:2px solid var(--rule-2);padding-right:20px}
-  .stack{grid-template-columns:1fr}
-  .col{border-right:0;border-bottom:1px solid var(--rule);padding:0 0 18px;margin-bottom:18px}
-  .col:last-child{border-bottom:0;margin-bottom:0}
-}
-@media (max-width:620px){
-  body{font-size:16px}
-  .shell{padding:0 18px}
-  .call{padding-top:48px}
-  .scene{grid-template-columns:1fr;gap:14px;padding-left:18px;border-left-width:2px}
-  .stamp{padding:0}
-  .stamp b{display:inline;font-size:15px}
-  .stamp .day::before{content:" "}
-  .case-grid{grid-template-columns:1fr}
-  .steps{grid-template-columns:1fr}
-  .job{grid-template-columns:1fr;gap:2px}
-  .job p.what{grid-column:1}
-  .job .when{order:-1}
-}
-@media (prefers-reduced-motion:reduce){
-  *{transition:none!important;animation:none!important}
-  .rise{opacity:1;transform:none}
-}
+@media (max-width:560px){ .bar h1 em{display:none} }
 </style>
-<script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="shell">
-    <div class="wordmark">Corentin Bezille <span>— Forward Deployed Engineer</span></div>
-    <div class="availability"><span class="dot" aria-hidden="true"></span>Disponible · préavis 3 mois · full remote</div>
-  </div>
+<header class="bar">
+  <h1>Quelqu'un sur place <em>— le CV de Corentin Bezille, en jeu</em></h1>
+  <span class="sp"></span>
+  <button id="btn-dossier" type="button">Dossier</button>
+  <a href="cv.html">CV</a>
+  <a class="fort" href="mailto:corentin.bezille1756@gmail.com?subject=Forward%20Deployed%20Engineer">Écrire</a>
 </header>
 
-<main class="shell">
-
-  <section class="call" aria-labelledby="scene-title">
-    <p class="eyebrow" id="scene-title">L'appel</p>
-
-    <div class="scene">
-      <div class="stamp"><b>14:02</b><span class="day">mardi</span></div>
-      <div>
-        <p>Un médecin appelle. L'assistant ne répond plus dans son service, et il a six patients qui attendent.</p>
-        <p class="soft">Personne ne sait encore si c'est le modèle, le GPU, le réseau, la mise à jour de la veille,
-        ou simplement la façon dont la question a été posée. Ce qu'il veut, lui, c'est savoir s'il continue
-        sa consultation sans l'outil.</p>
-      </div>
+<div class="scene">
+  <canvas id="jeu" width="480" height="270" aria-label="Jeu de plateforme. Le contenu du CV est aussi lisible dans le dossier."></canvas>
+  <noscript>
+    <div id="repli">
+      <h2>Le jeu a besoin de JavaScript</h2>
+      <p>Tout le contenu est lisible sans lui : <a href="dossier.html">ouvrir le dossier</a>
+      ou <a href="cv.html">le CV</a>.</p>
     </div>
+  </noscript>
+</div>
 
-    <div class="answer">
-      <p><strong>C'est ce moment-là que je cherche.</strong> Depuis dix-neuf mois je le vis sur cinq data centers
-      plutôt que dans un service hospitalier : un système critique décroche, cinq couches peuvent être en cause,
-      un engagement de délai court, et quelqu'un au bout du fil attend une réponse nette tout de suite.</p>
-      <p>Le métier n'est pas de tout savoir. Il est de savoir où regarder en premier, de rendre la main
-      à l'utilisateur le plus vite possible, et de remonter ce qu'on a compris à ceux qui construisent le produit.</p>
-    </div>
+<div id="pad" aria-hidden="true">
+  <div class="z gauche">déplacer</div>
+  <div class="z tr">trace</div>
+  <div class="z saut">saut · impulsion</div>
+</div>
 
-    <p class="caveat"><b>Ce que je ne suis pas.</b> Je n'ai jamais travaillé en établissement de santé, et je n'ai
-    jamais servi un modèle en production sur une stack GPU. Cette page dit ce que je sais faire, avec des cas
-    vérifiables, et la section « la stack, honnêtement » dit précisément ce que j'ai à apprendre.</p>
+<div class="aide">
+  <span><kbd>←</kbd><kbd>→</kbd> <b>avancer</b></span>
+  <span><kbd>Espace</kbd> <b>sauter</b>, puis à nouveau en l'air : <b>impulsion</b></span>
+  <span><kbd>Maj</kbd> <b>lire les journaux</b></span>
+  <span><kbd>Échap</kbd> <b>retour</b></span>
+  <span><kbd>Maj</kbd>+<kbd>D</kbd> <b>dossier</b></span>
+</div>
 
-    <div class="loop">
-      <p class="loop-title">La boucle que je sais tenir</p>
-      <div class="steps">
-        <div class="step">
-          <h3>Isoler</h3>
-          <p>Réduire le champ des causes possibles avant de toucher quoi que ce soit.</p>
-        </div>
-        <div class="step">
-          <h3>Contourner</h3>
-          <p>Rendre l'usage à l'utilisateur, même dégradé, pendant qu'on cherche.</p>
-        </div>
-        <div class="step">
-          <h3>Corriger</h3>
-          <p>Traiter la cause, pas le symptôme, et vérifier que ça tient.</p>
-        </div>
-        <div class="step">
-          <h3>Expliquer</h3>
-          <p>Dire ce qui s'est passé dans les mots de celui qui a appelé.</p>
-        </div>
-        <div class="step">
-          <h3>Remonter</h3>
-          <p>Transformer l'incident en correctif produit pour qu'il ne revienne pas.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+<div id="releve" hidden tabindex="-1"></div>
 
-  <section class="section rise" aria-labelledby="cases-title">
-    <div class="section-head">
-      <h2 id="cases-title">Quatre fois où j'ai déjà fait ça</h2>
-      <p class="lede">Aucun de ces cas n'est de la santé. Tous demandent la même chose : trouver la couche fautive
-      pendant que quelqu'un attend, puis l'expliquer à quelqu'un qui n'est pas technicien.</p>
-    </div>
-
-    <article class="case">
-      <div class="case-top">
-        <span class="case-tag">Isoler · Contourner</span>
-        <h3>Cinq data centers, un engagement de délai, un seul interlocuteur pour tout le monde</h3>
-        <div class="case-meta">Digital Realty · Security Technical Coordinator · février 2025 → aujourd'hui · Île-de-France</div>
-      </div>
-      <div class="case-grid">
-        <div class="field">
-          <h4>La situation</h4>
-          <p>Le contrôle d'accès et la vidéosurveillance de cinq data centers majeurs, opérés par des prestataires
-          différents, avec des niveaux de service contractuels sur la disponibilité. Quand un lecteur de badge
-          refuse une équipe d'intervention à 3 h du matin, la cause peut être le lecteur, le réseau du site,
-          le serveur central, une règle de droits ou le prestataire lui-même.</p>
-        </div>
-        <div class="field">
-          <h4>Ce que je regarde</h4>
-          <p>Les journaux d'exploitation en premier : ils disent si l'événement a été vu, où il s'est arrêté,
-          et à quelle heure exactement. Ça tranche en quelques minutes entre un problème de terrain, un problème
-          réseau et un problème de configuration, sans déplacer personne pour rien.</p>
-        </div>
-        <div class="field wide">
-          <h4>Ce que je fais</h4>
-          <p>J'ouvre le bon point d'escalade du premier coup — équipe sécurité locale, équipe technique
-          ou prestataire — parce que l'escalade au mauvais interlocuteur coûte plus cher que la panne.
-          Je tiens la main courante, je documente le défaut ou le manquement, et je remonte le risque
-          de conformité au management sécurité quand il y en a un.</p>
-        </div>
-        <div class="field outcome">
-          <h4>Ce que ça donne</h4>
-          <p>Dix-neuf mois de coordination d'incidents sur des systèmes critiques sous contrainte de délai,
-          avec des interlocuteurs qui ne sont jamais des ingénieurs. Premier du challenge interne
-          Cybersecurity Month 2025 du groupe.</p>
-        </div>
-      </div>
-    </article>
-
-    <article class="case">
-      <div class="case-top">
-        <span class="case-tag done">Remonter</span>
-        <h3>Une veille quotidienne qui se lit toute seule, avec un modèle dans la boucle</h3>
-        <div class="case-meta">Indépendant · 2023 → 2025 · Python, API OpenAI</div>
-      </div>
-      <div class="case-grid">
-        <div class="field">
-          <h4>La situation</h4>
-          <p>Suivre la menace mondiale au quotidien demande de lire des dizaines de sources hétérogènes chaque
-          matin. Fait à la main, c'est une heure perdue et des signaux manqués ; pas fait du tout, on découvre
-          les choses trop tard.</p>
-        </div>
-        <div class="field">
-          <h4>Ce que je fais</h4>
-          <p>Un script Python qui récupère les flux, les passe au modèle via l'API pour en extraire et résumer
-          ce qui compte, et déclenche une alerte quand un sujet suivi bouge. Le modèle n'est pas le produit :
-          c'est une brique dans un pipeline, avec ce que ça implique de formats instables et de sorties à valider.</p>
-        </div>
-        <div class="field wide">
-          <h4>Pourquoi ça compte ici</h4>
-          <p>C'est ma preuve concrète que je sais mettre un grand modèle de langage au travail sur une tâche
-          réelle, et surtout que je sais ce qui casse quand on le fait : une réponse hors format, une source
-          qui change de structure, un coût qui dérive, une sortie plausible mais fausse.</p>
-        </div>
-        <div class="field trace"><i>source</i>  38 flux · collecte quotidienne
-<i>modèle</i>  extraction + résumé via API, sortie contrainte
-<i>garde</i>   validation du format avant diffusion — sinon rejet
-<b>sortie</b>  synthèse du jour + alerte sur sujets suivis</div>
-      </div>
-    </article>
-
-    <article class="case">
-      <div class="case-top">
-        <span class="case-tag">Corriger · Expliquer</span>
-        <h3>Du XML que personne ne lit à une alerte que quelqu'un comprend</h3>
-        <div class="case-meta">ALBYS puis indépendant · 2021 → 2025 · supervision DMARC on-premise</div>
-      </div>
-      <div class="case-grid">
-        <div class="field">
-          <h4>La situation</h4>
-          <p>Des courriels frauduleux circulent au nom d'un domaine d'entreprise. Le protocole qui permet de
-          le détecter renvoie des rapports en XML brut, illisibles pour la personne qui devrait agir. Le signal
-          existe, il n'arrive à personne.</p>
-        </div>
-        <div class="field">
-          <h4>Ce que je fais</h4>
-          <p>Chez ALBYS, la démarche complète : rédaction des règles techniques, développement d'un simulateur
-          d'attaque pour prouver la faille, puis mise en place d'un tableau de bord de supervision. En
-          indépendant, j'en fais un outil on-premise qui analyse les rapports et déclenche des alertes
-          automatiques contre l'usurpation.</p>
-        </div>
-        <div class="field wide">
-          <h4>La suite</h4>
-          <p>J'ai mené les études structurelles et la modélisation de risques pour préparer le passage de
-          l'outil en service cloud. C'est là que j'ai appris la différence entre un outil qui marche chez moi
-          et un outil qu'on confie à quelqu'un d'autre.</p>
-        </div>
-        <div class="field outcome">
-          <h4>Ce que ça donne</h4>
-          <p>Une chaîne complète tenue seul, de la découverte du problème jusqu'à l'alerte utile — la partie
-          la plus difficile n'ayant jamais été technique, mais de rendre le résultat lisible.</p>
-        </div>
-      </div>
-    </article>
-
-    <article class="case">
-      <div class="case-top">
-        <span class="case-tag done">Expliquer</span>
-        <h3>Du stockage que personne ne savait lire, rendu visible en Python</h3>
-        <div class="case-meta">Thales · R&amp;D logicielle · 2020 → 2021 · Python, visualisation</div>
-      </div>
-      <div class="case-grid">
-        <div class="field">
-          <h4>La situation</h4>
-          <p>Des ressources de stockage réparties, sans vue d'ensemble : impossible de dire où l'espace partait
-          ni de décider quoi optimiser.</p>
-        </div>
-        <div class="field">
-          <h4>Ce que je fais</h4>
-          <p>Une solution centralisée de suivi en Python pour analyser l'occupation, doublée d'un tableau de
-          bord interactif avec un suivi graphique dynamique — pour que la décision se prenne en regardant
-          l'écran, pas en lisant un export.</p>
-        </div>
-        <div class="field outcome">
-          <h4>Ce que ça donne</h4>
-          <p>Ma première expérience de la vraie mission : transformer une donnée technique en quelque chose
-          sur quoi une équipe peut agir. C'est exactement le geste qu'on attend d'un Forward Deployed Engineer.</p>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <section class="section rise" aria-labelledby="stack-title">
-    <div class="section-head">
-      <h2 id="stack-title">La stack, honnêtement</h2>
-      <p class="lede">Un Forward Deployed Engineer qui bluffe devant un médecin transforme un incident en
-      deux incidents. Voilà donc le partage réel.</p>
-    </div>
-    <div class="stack">
-      <div class="col solid">
-        <h3>Solide</h3>
-        <p class="hint">J'interviens seul, en production, sans filet.</p>
-        <ul>
-          <li>Python, Bash, PowerShell</li>
-          <li>Analyse de journaux et diagnostic</li>
-          <li>Linux, Windows Server, Active Directory</li>
-          <li>Réseau : VLAN, VPN, pare-feu, Cisco, Ubiquiti</li>
-          <li>Coordination d'incident sous engagement de délai</li>
-          <li>Git, VMware, VirtualBox</li>
-        </ul>
-      </div>
-      <div class="col ok">
-        <h3>Opérationnel</h3>
-        <p class="hint">Je suis autonome, je vérifie encore mes arrières.</p>
-        <ul>
-          <li>API de modèles : OpenAI, Gemini, Mistral</li>
-          <li>Ollama en local, agents (Claude, OpenClaw)</li>
-          <li>SQL, MariaDB</li>
-          <li>Go, C, C#, PHP</li>
-          <li>OWASP Top 10, Burp Suite</li>
-          <li>ISO 27001, appréciation des risques, PCA/PRA</li>
-        </ul>
-      </div>
-      <div class="col learn">
-        <h3>À apprendre</h3>
-        <p class="hint">Mon plan pour les trois premiers mois.</p>
-        <ul>
-          <li>Servir un modèle sur GPU : VRAM, quantization, files d'attente</li>
-          <li>Observabilité applicative : traces, métriques, alertes</li>
-          <li>Conteneurs et déploiement continu à l'échelle</li>
-          <li>Le vocabulaire et les usages du soin</li>
-          <li>Hébergement de données de santé et cadre réglementaire</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <section class="section rise" aria-labelledby="track-title">
-    <div class="section-head">
-      <h2 id="track-title">Parcours</h2>
-      <p class="lede">Cinq ans en alternance, un master en 2023, trois ans depuis. Beaucoup de terrain,
-      peu de tour d'ivoire.</p>
-    </div>
-    <div class="track">
-      <div class="job">
-        <div class="when">fév. 2025 → auj.</div>
-        <div>
-          <h3>Security Technical Coordinator</h3>
-          <p class="where">Digital Realty · Île-de-France</p>
-        </div>
-        <p class="what">Contrôle d'accès et vidéosurveillance sur <b>cinq data centers</b>, pilotage de
-        prestataires, tenue des engagements de service, coordination d'incidents et analyse de journaux.
-        <b>Premier du challenge Cybersecurity Month 2025.</b></p>
-      </div>
-      <div class="job">
-        <div class="when">2023 → 2025</div>
-        <div>
-          <h3>Développeur d'outils de sécurité</h3>
-          <p class="where">Indépendant</p>
-        </div>
-        <p class="what">Outil de supervision DMARC on-premise, modélisation de risques pour un passage en
-        service cloud, et <b>automatisation de veille sur API de modèle de langage</b>.</p>
-      </div>
-      <div class="job">
-        <div class="when">2021 → 2023</div>
-        <div>
-          <h3>Administrateur systèmes et réseaux</h3>
-          <p class="where">ALBYS · alternance</p>
-        </div>
-        <p class="what">Refonte complète de l'architecture réseau (VLAN, VPN, pare-feu), démarche
-        anti-usurpation de domaine avec simulateur d'attaque, campagnes de scan de vulnérabilités,
-        simulations d'hameçonnage, audit du déploiement EDR.</p>
-      </div>
-      <div class="job">
-        <div class="when">2020 → 2021</div>
-        <div>
-          <h3>R&amp;D logicielle</h3>
-          <p class="where">Thales · alternance</p>
-        </div>
-        <p class="what">Suivi centralisé des ressources de stockage en <b>Python</b> et tableau de bord
-        interactif de supervision graphique.</p>
-      </div>
-      <div class="job">
-        <div class="when">2018 → 2020</div>
-        <div>
-          <h3>Support informatique</h3>
-          <p class="where">Medline · alternance</p>
-        </div>
-        <p class="what">Dépannage matériel, réseau et logiciel auprès d'utilisateurs finaux. <b>Deux ans
-        à expliquer la technique à des gens dont ce n'est pas le métier.</b></p>
-      </div>
-      <div class="job">
-        <div class="when">2021 → 2023</div>
-        <div>
-          <h3>Master en ingénierie informatique — MSc Cybersécurité</h3>
-          <p class="where">ESIEE-IT · programme labellisé ANSSI SecNumEdu</p>
-        </div>
-        <p class="what">Gestion des risques, continuité et reprise d'activité, investigation numérique,
-        tests d'intrusion. Précédé d'un bachelor informatique et d'un BTS SIO option réseaux.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="outro rise" aria-labelledby="contact-title">
-    <h2 id="contact-title">Parlons du premier incident que je prendrai</h2>
-    <p>Le meilleur test, c'est de me décrire un vrai ticket difficile de vos équipes et de me demander
-    par où je commencerais. Je réponds vite.</p>
-    <div class="links">
-      <a class="link primary" href="mailto:corentin.bezille1756@gmail.com?subject=Forward%20Deployed%20Engineer">
-        Écrire un message <small>corentin.bezille1756@gmail.com</small>
-      </a>
-      <a class="link" href="cv.html">CV <small>version imprimable</small></a>
-      <a class="link" href="https://github.com/CorentinBzi" rel="noopener">GitHub <small>CorentinBzi</small></a>
-      <a class="link" href="https://tryhackme.com/p/CocoBlues" rel="noopener">TryHackMe <small>CocoBlues</small></a>
-    </div>
-    <p class="colophon">
-      Buc (78) · full remote recherché, déplacements ponctuels sans difficulté · anglais professionnel, TOEIC 875<br>
-      Page écrite à la main, un seul fichier, sans framework — comme les outils dont je parle plus haut.
-    </p>
-  </section>
-
-</main>
-
-<script>
-(function(){
-  document.documentElement.classList.add("js");
-  var cibles = document.querySelectorAll(".rise");
-  if (!("IntersectionObserver" in window) ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    Array.prototype.forEach.call(cibles, function(el){ el.classList.add("seen"); });
-    return;
-  }
-  var obs = new IntersectionObserver(function(entrees){
-    entrees.forEach(function(e){
-      if (e.isIntersecting){ e.target.classList.add("seen"); obs.unobserve(e.target); }
-    });
-  }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
-  Array.prototype.forEach.call(cibles, function(el){ obs.observe(el); });
-})();
-</script>
-
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
