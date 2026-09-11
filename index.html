@@ -55,7 +55,8 @@ a{color:var(--sonde)}
 .bar a.fort:hover{opacity:.88;color:#0B0E11}
 
 /* ---- scène ---- */
-.scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;background:#07090B}
+.scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;
+  position:relative;background:#07090B;padding:6px}
 canvas{display:block;image-rendering:pixelated;outline:none}
 canvas:focus-visible{box-shadow:0 0 0 2px var(--sonde)}
 
@@ -80,6 +81,8 @@ canvas:focus-visible{box-shadow:0 0 0 2px var(--sonde)}
 #pad .saut{right:10px;width:104px;bottom:8px;height:52px}
 #pad .tr{right:10px;width:104px;top:8px;height:44px}
 @media (pointer:coarse){ #pad{display:block} .aide{display:none} }
+/* l'aide clavier ne tient pas sous 720 px : elle n'y sert à personne */
+@media (max-width:720px){ .aide{display:none} }
 
 /* ---- carte de relevé ---- */
 #releve{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;

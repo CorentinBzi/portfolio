@@ -263,7 +263,11 @@ export function createRenderer(canvas) {
     present() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
       const dispo = canvas.parentElement.getBoundingClientRect();
-      const e = Math.max(1, Math.floor(Math.min(dispo.width / VUE_W, dispo.height / VUE_H)));
+      // Échelle entière tant qu'on tient au moins deux fois : le pixel reste net.
+      // En dessous — un téléphone en portrait — on accepte une échelle fractionnaire,
+      // parce qu'un jeu minuscule au milieu d'un écran vide ne sert personne.
+      const brut = Math.min(dispo.width / VUE_W, dispo.height / VUE_H);
+      const e = brut >= 2 ? Math.floor(brut) : Math.max(1, brut);
       const w = VUE_W * e, h = VUE_H * e;
       if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
         canvas.width = w * dpr; canvas.height = h * dpr;
