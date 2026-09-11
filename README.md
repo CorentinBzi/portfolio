@@ -12,13 +12,16 @@ qu'on y faisait. Aucune image, aucun modèle, aucun son importé : tout est dess
 
 ## La ville
 
-On pilote une sonde, un petit programme de diagnostic, au ras des rues. Le sud est 2018, le
-nord est aujourd'hui, et une tour ferme l'avenue : c'est le poste visé. Devant chaque portail,
-le fait de CV s'affiche avant même d'entrer, pour qui ne jouera pas. Entrer lance le jeu du
-quartier. Chaque jeu gagné donne une clé.
+On conduit une voiture volante au ras des rues. On part de la place centrale, sa fontaine et
+son parc ; sept avenues en étoile mènent chacune à un quartier, deux anneaux et des rues
+secondaires les relient, et la tour ferme le nord : c'est le poste visé. La boussole indique le
+prochain quartier du parcours, mais rien n'oblige à le suivre. Devant chaque portail, le fait
+de CV s'affiche avant même d'entrer, pour qui ne jouera pas. Entrer lance le jeu du quartier.
+Chaque jeu gagné donne une clé.
 
 | Quartier | Étape | Verbe | Le jeu |
 |---|---|---|---|
+| 0 | ESIEE-IT, 2018-2023 | Apprendre | L'école : programmer par blocs, puis déchiffrer des drapeaux (base64, hex, ROT13, XOR) |
 | 1 | Medline, 2018-2020 | Traduire | Le helpdesk : diagnostiquer au terminal, puis expliquer avec les mots de l'utilisateur |
 | 2 | Thales, 2020-2021 | Instrumenter | La salle de stockage : poser des sondes, lire les courbes, prédire la saturation |
 | 3 | Albys, 2021-2023 | Segmenter | Le réseau : confiner un intrus par cloisons et règles sans casser les flux légitimes |
@@ -26,7 +29,7 @@ quartier. Chaque jeu gagné donne une clé.
 | 5 | Digital Realty, depuis 2025 | Coordonner | La supervision : quatre incidents, cinq sites, des délais, un faux positif |
 | 6 | La tour — scénario | Diagnostiquer | 05:52, une IA hospitalière décroche : descendre les couches jusqu'à la cause physique |
 
-Le sixième est une **mise en situation**, étiquetée comme telle partout : il ne revendique
+Le dernier est une **mise en situation**, étiquetée comme telle partout : il ne revendique
 aucune expérience.
 
 ## Honnêteté par construction
@@ -54,7 +57,10 @@ src/mobilier.js       lampadaires, poubelles, bancs, bornes, abribus, distribute
                       bennes, cônes, échafaudages, affiches, bannières — tout instancié
 src/pnj.js            les passants : silhouettes de boîtes instanciées par membre, animées
 src/enseignes.js      textures d'enseignes dessinées sur canvas
-src/sonde.js          la sonde, ses commandes, la caméra
+src/plan.js           le plan : place, avenues en étoile, anneaux, parcelles polaires, collision
+src/parc.js           la place centrale : pavés, fontaine, arbres, kiosques, monorail
+src/voiture.js        la voiture volante, ses commandes, la caméra
+src/decor_details.js  toits, balcons, vitrines, auvents, câbles, passerelles, faisceaux
 src/entrees.js        clavier, manette, joystick tactile
 src/palette.js        les couleurs, et la règle qui réserve le rouge à l'anomalie
 src/cv.js             les faits, gelés
@@ -85,7 +91,7 @@ Chaque jeu doit exposer `resoudre()`, qui joue une solution correcte sans humain
 qu'il est gagnable.
 
 En headless, `index.html?capture=2` rend deux images sans bloom et s'arrête ;
-`?capture=2,x,z,cap` place la sonde ; `?panneau=<id>` ouvre un relevé ; `?jeu=<id>` lance un jeu.
+`?capture=2,x,z,cap` place la voiture ; `?panneau=<id>` ouvre un relevé ; `?jeu=<id>` lance un jeu.
 
 ## Contraintes tenues
 

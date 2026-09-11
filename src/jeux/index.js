@@ -7,7 +7,8 @@ import albys from './albys.js';
 import independant from './independant.js';
 import digitalrealty from './digitalrealty.js';
 import scenario from './scenario.js';
+import ecole from './ecole.js';
 
-export const JEUX = [medline, thales, albys, independant, digitalrealty, scenario];
+export const JEUX = [ecole, medline, thales, albys, independant, digitalrealty, scenario];
 
 export function jeuPour(id) { return JEUX.find(j => j.id === id) || null; }

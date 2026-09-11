@@ -28,6 +28,7 @@ export const QUARTIERS = {
   albys:         { hex: '#9B7CFF', num: 0x9B7CFF },
   independant:   { hex: '#FF9A5C', num: 0xFF9A5C },
   digitalrealty: { hex: '#5AA9E6', num: 0x5AA9E6 },
+  ecole:         { hex: '#F2D13B', num: 0xF2D13B },
   scenario:      { hex: '#F0F4F8', num: 0xF0F4F8 },
 };
 

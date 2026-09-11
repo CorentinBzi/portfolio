@@ -55,6 +55,18 @@ export const FAITS = Object.freeze({
            "conformité. Premier du challenge interne Cybersecurity Month 2025.",
     pourLePoste: "Arbitrer, déléguer avec une consigne exécutable, et savoir ne pas réagir.",
   },
+  ecole: {
+    employeur: 'ESIEE-IT',
+    periode: '2018 – 2023',
+    poste: 'BTS SIO SISR, Bachelor informatique option cyber, puis Master MSc Cybersécurité',
+    texte: "Master en ingénierie informatique, MSc Cybersécurité, programme labellisé ANSSI " +
+           "SecNumEdu (2021-2023). Avant cela, un Bachelor informatique option cybersécurité " +
+           "(2020-2021) et un BTS SIO option SISR (2018-2020). Enseignements centraux : gestion " +
+           "des risques, continuité et reprise d'activité, investigation numérique, tests " +
+           "d'intrusion. Cinq années en alternance, donc en entreprise la moitié du temps.",
+    pourLePoste: "Une base solide en systèmes, réseaux et sécurité offensive, apprise en " +
+                 "alternance, donc jamais loin d'une machine réelle.",
+  },
   scenario: {
     employeur: 'SCÉNARIO',
     periode: 'mise en situation',
