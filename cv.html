@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV — Corentin Bezille, Forward Deployed Engineer</title>
+<meta name="description" content="CV de Corentin Bezille, candidat Forward Deployed Engineer : diagnostic de systèmes critiques, Python, modèles de langage, communication avec des utilisateurs non techniques.">
+<meta name="color-scheme" content="light">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#FFFFFF;
+  --ink:#0F141B;
+  --ink-2:#4B5462;
+  --ink-3:#6C7686;
+  --rule:#D8DEE6;
+  --signal:#A85B07;
+  --resolved:#0E6A57;
+  --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:#EEF0F3;color:var(--ink);
+  font-family:var(--serif);font-size:10.2pt;line-height:1.44;
+  -webkit-font-smoothing:antialiased;
+}
+.page{
+  background:var(--paper);width:210mm;min-height:297mm;margin:16px auto;
+  padding:14mm 15mm 12mm;box-shadow:0 2px 20px rgba(15,20,27,.14);
+}
+.page + .page{margin-top:0}
+
+/* en-tête */
+.id{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;
+  border-bottom:2.5px solid var(--ink);padding-bottom:7px}
+.id h1{font-family:var(--sans);font-size:21pt;font-weight:700;letter-spacing:-.025em;
+  margin:0;line-height:1}
+.id .role{font-family:var(--sans);font-size:11pt;font-weight:600;color:var(--signal);
+  margin:5px 0 0;letter-spacing:.005em}
+.id .reach{font-family:var(--mono);font-size:8.2pt;line-height:1.65;color:var(--ink-2);
+  text-align:right;white-space:nowrap}
+.id .reach a{color:var(--ink-2);text-decoration:none}
+
+/* accroche */
+.pitch{margin:11px 0 0;border-left:2.5px solid var(--signal);padding:1px 0 1px 12px}
+.pitch p{margin:0}
+.pitch p + p{margin-top:5px}
+.pitch b{font-weight:600}
+
+h2.sec{
+  font-family:var(--sans);font-size:8.6pt;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink);margin:14px 0 0;padding-bottom:4px;
+  border-bottom:1px solid var(--rule);
+}
+
+/* compétences */
+.skills{display:grid;grid-template-columns:repeat(3,1fr);gap:0 20px;margin-top:7px}
+.sk{padding:4px 0;border-bottom:1px solid var(--rule)}
+.sk:nth-last-child(-n+3){border-bottom:0}
+.sk h3{font-family:var(--sans);font-size:8.4pt;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--signal);margin:0 0 2px}
+.sk p{margin:0;font-size:9.7pt;line-height:1.4}
+
+/* expérience */
+.role-block{margin-top:10px;break-inside:avoid}
+.role-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.role-head h3{font-family:var(--sans);font-size:11.2pt;font-weight:700;margin:0;letter-spacing:-.012em}
+.role-head .when{font-family:var(--mono);font-size:8.4pt;color:var(--ink-3);white-space:nowrap}
+.role-sub{font-family:var(--sans);font-size:9pt;font-weight:500;color:var(--ink-2);
+  margin:1px 0 4px;display:flex;justify-content:space-between;gap:14px}
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{position:relative;padding:0 0 3px 12px;font-size:9.9pt;line-height:1.44}
+ul.pts li::before{content:"";position:absolute;left:0;top:.62em;width:4px;height:4px;
+  background:var(--rule);border-radius:50%}
+ul.pts li b{font-weight:600}
+.win{background:#F4F8F7;border-left:2.5px solid var(--resolved);padding:3px 9px;margin-top:3px;
+  font-size:9.7pt;line-height:1.4}
+.win b{color:var(--resolved);font-weight:600}
+
+/* formation */
+.edu{margin-top:6px}
+.edu-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  padding:3px 0;border-bottom:1px solid var(--rule)}
+.edu-row:last-child{border-bottom:0}
+.edu-row h3{font-family:var(--sans);font-size:10pt;font-weight:600;margin:0}
+.edu-row .where{font-family:var(--sans);font-size:8.6pt;font-weight:400;color:var(--ink-2)}
+.edu-row .when{font-family:var(--mono);font-size:8.4pt;color:var(--ink-3);white-space:nowrap}
+.edu-note{margin:4px 0 0;font-size:9.2pt;color:var(--ink-2)}
+
+/* honnêteté */
+.gap{margin-top:7px;border:1px solid var(--rule);border-left:2.5px solid var(--signal);
+  padding:7px 11px;background:#FCFBF8}
+.gap h3{font-family:var(--sans);font-size:8.6pt;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--signal);margin:0 0 3px}
+.gap p{margin:0;font-size:9.7pt;line-height:1.44}
+
+h2.sec .cont{font-weight:500;letter-spacing:.04em;color:var(--ink-3);text-transform:none}
+.foot{margin-top:8px;padding-top:5px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:8pt;color:var(--ink-3);display:flex;
+  justify-content:space-between;gap:14px}
+
+.print-tip{
+  max-width:210mm;margin:18px auto -4px;padding:11px 14px;background:#FFF;
+  border:1px solid var(--rule);border-radius:3px;font-family:var(--sans);font-size:13px;
+  color:var(--ink-2);line-height:1.5;
+}
+.print-tip b{color:var(--ink)}
+
+@page{size:A4;margin:11mm 13mm}
+@media print{
+  body{background:#FFF}
+  .page{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}
+  .page + .page{break-before:page}
+  .print-tip{display:none}
+  a{text-decoration:none;color:inherit}
+  h2.sec{break-after:avoid}
+  .role-block,.gap,.edu-row,.win{break-inside:avoid}
+}
+@media (max-width:800px){
+  .page{width:auto;padding:22px 18px}
+  .id{flex-direction:column;gap:8px}
+  .id .reach{text-align:left}
+  .skills{grid-template-columns:1fr}
+  .sk{border-bottom:1px solid var(--rule)}
+  .role-head,.role-sub,.edu-row,.foot{flex-direction:column;gap:2px}
+  .role-head .when,.edu-row .when{order:-1}
+}
+</style>
+</head>
+<body>
+
+<p class="print-tip"><b>Pour obtenir le PDF :</b> imprimer cette page (Ctrl+P) et choisir
+« Enregistrer au format PDF », format A4, marges par défaut, arrière-plans activés.</p>
+
+<article class="page">
+
+  <header class="id">
+    <div>
+      <h1>Corentin Bezille</h1>
+      <p class="role">Forward Deployed Engineer — diagnostic de systèmes critiques &amp; IA appliquée</p>
+    </div>
+    <div class="reach">
+      Buc 78530, France<br>
+      +33 6 46 76 60 26<br>
+      <a href="mailto:corentin.bezille1756@gmail.com">corentin.bezille1756@gmail.com</a><br>
+      github.com/CorentinBzi<br>
+      Permis B · véhicule personnel
+    </div>
+  </header>
+
+  <div class="pitch">
+    <p>Je travaille là où un système critique décroche et où plusieurs couches peuvent être en cause.
+    Depuis dix-neuf mois, je coordonne les incidents du contrôle d'accès et de la vidéosurveillance de
+    <b>cinq data centers</b> sous engagement de délai : isoler la cause dans les journaux, rendre l'usage
+    au plus vite, escalader au bon interlocuteur, expliquer ce qui s'est passé à des gens dont la
+    technique n'est pas le métier.</p>
+    <p>En parallèle je construis mes outils en <b>Python</b>, dont une chaîne de veille bâtie sur une
+    <b>API de modèle de langage</b>. Je cherche un poste de terrain où ces deux moitiés servent ensemble.</p>
+  </div>
+
+  <h2 class="sec">Compétences</h2>
+  <div class="skills">
+    <div class="sk">
+      <h3>Diagnostic &amp; exploitation</h3>
+      <p>Analyse de journaux, isolement de cause, coordination d'incident, engagements de service,
+      escalade, documentation.</p>
+    </div>
+    <div class="sk">
+      <h3>Développement</h3>
+      <p>Python, Bash/Shell, PowerShell, Go, C, C#, SQL/MariaDB, PHP, HTML/CSS. Git et GitHub.</p>
+    </div>
+    <div class="sk">
+      <h3>IA appliquée</h3>
+      <p>API OpenAI, Gemini, Mistral. Ollama en local. IA agentique (Claude Opus, OpenClaw).
+      Intégration de modèles dans des chaînes automatisées.</p>
+    </div>
+    <div class="sk">
+      <h3>Systèmes &amp; réseaux</h3>
+      <p>Linux, Windows Server, Active Directory. Cisco, Ubiquiti/Unifi, pare-feu, VPN, VLAN.
+      VMware, VirtualBox.</p>
+    </div>
+    <div class="sk">
+      <h3>Sécurité</h3>
+      <p>ISO 27001, appréciation des risques, PCA/PRA, audit EDR, OWASP Top 10, Burp Suite,
+      investigation numérique.</p>
+    </div>
+    <div class="sk">
+      <h3>Relation utilisateur &amp; langues</h3>
+      <p>Vulgarisation, pilotage de prestataires, support d'utilisateurs finaux. Français natif,
+      anglais professionnel (TOEIC 875).</p>
+    </div>
+  </div>
+
+  <h2 class="sec">Expérience</h2>
+
+  <section class="role-block">
+    <div class="role-head">
+      <h3>Security Technical Coordinator</h3>
+      <span class="when">février 2025 → aujourd'hui</span>
+    </div>
+    <div class="role-sub"><span>Digital Realty</span><span>Île-de-France</span></div>
+    <ul class="pts">
+      <li>Supervision du contrôle d'accès et de la vidéosurveillance sur <b>cinq data centers majeurs</b>,
+      en coordination avec les services transverses et les prestataires externes.</li>
+      <li>Disponibilité des systèmes techniques de sécurité en <b>alignement strict avec les niveaux de
+      service contractuels</b> ; coordination de la réponse à incident, des procédures de dépannage et des
+      points d'escalade avec les équipes locales.</li>
+      <li>Tenue des registres de sécurité, <b>analyse des journaux d'exploitation</b>, remontée des défauts,
+      omissions et risques de conformité au management.</li>
+    </ul>
+    <p class="win"><b>Résultat :</b> premier du challenge interne Cybersecurity Month 2025 du groupe.</p>
+  </section>
+
+  <section class="role-block">
+    <div class="role-head">
+      <h3>Développeur d'outils de sécurité — indépendant</h3>
+      <span class="when">2023 → 2025</span>
+    </div>
+    <div class="role-sub"><span>Activité en propre</span><span>France</span></div>
+    <ul class="pts">
+      <li><b>Automatisation de veille sur API de modèle de langage :</b> script Python qui collecte des flux
+      de renseignement sur la menace, en extrait et résume le contenu utile via l'API, et déclenche des
+      alertes — avec validation du format en sortie avant diffusion.</li>
+      <li>Conception d'une solution on-premise de sécurité de domaine et de <b>supervision DMARC</b> :
+      analyse des rapports d'authentification et alertes automatiques contre l'usurpation d'identité.</li>
+      <li>Études structurelles et modélisation de risques pour préparer la migration de l'outil vers un
+      service cloud sécurisé.</li>
+    </ul>
+  </section>
+
+</article>
+
+<article class="page">
+
+  <h2 class="sec">Expérience <span class="cont">(suite)</span></h2>
+
+  <section class="role-block">
+    <div class="role-head">
+      <h3>Administrateur systèmes et réseaux</h3>
+      <span class="when">2021 → 2023</span>
+    </div>
+    <div class="role-sub"><span>ALBYS — alternance</span><span>France</span></div>
+    <ul class="pts">
+      <li>Refonte complète de l'architecture réseau sur infrastructure Ubiquiti : VLAN, VPN sécurisés,
+      pare-feu.</li>
+      <li>Démarche complète de conformité anti-usurpation de domaine : rédaction des règles techniques,
+      développement d'un <b>simulateur d'attaque</b>, mise en place d'un tableau de bord de supervision DMARC.</li>
+      <li>Campagnes de scan de vulnérabilités (OpenVAS), exercices d'hameçonnage, audit du déploiement
+      EDR Malwarebytes et rédaction des dossiers d'architecture technique.</li>
+    </ul>
+  </section>
+
+  <section class="role-block">
+    <div class="role-head">
+      <h3>Recherche et développement logiciel</h3>
+      <span class="when">2020 → 2021</span>
+    </div>
+    <div class="role-sub"><span>Thales — alternance</span><span>France</span></div>
+    <ul class="pts">
+      <li>Développement en <b>Python</b> d'une solution centralisée de suivi des ressources de stockage,
+      avec <b>tableau de bord interactif</b> et suivi graphique dynamique pour les équipes d'exploitation.</li>
+    </ul>
+  </section>
+
+  <section class="role-block">
+    <div class="role-head">
+      <h3>Technicien support informatique</h3>
+      <span class="when">2018 → 2020</span>
+    </div>
+    <div class="role-sub"><span>Medline — alternance</span><span>France</span></div>
+    <ul class="pts">
+      <li>Dépannage matériel, réseau et logiciel auprès des utilisateurs de l'entreprise —
+      <b>deux ans d'interface quotidienne avec des interlocuteurs non techniques</b>.</li>
+    </ul>
+  </section>
+
+  <h2 class="sec">Formation</h2>
+  <div class="edu">
+    <div class="edu-row">
+      <div><h3>Master en ingénierie informatique — MSc Cybersécurité <span class="where">· ESIEE-IT,
+      programme labellisé ANSSI SecNumEdu</span></h3></div>
+      <span class="when">2021 → 2023</span>
+    </div>
+    <div class="edu-row">
+      <div><h3>Bachelor informatique, option cybersécurité <span class="where">· ESIEE-IT</span></h3></div>
+      <span class="when">2020 → 2021</span>
+    </div>
+    <div class="edu-row">
+      <div><h3>BTS SIO option SISR, administration réseaux et systèmes <span class="where">· ESIEE-IT</span></h3></div>
+      <span class="when">2018 → 2020</span>
+    </div>
+  </div>
+
+  <div class="gap">
+    <h3>Ce que j'ai à apprendre</h3>
+    <p>Je n'ai pas encore servi de modèle en production sur une stack GPU, ni travaillé en établissement
+    de santé. Mes trois premiers mois iraient au service de modèles (VRAM, quantization, files d'attente),
+    à l'observabilité applicative, au vocabulaire du soin et au cadre d'hébergement des données de santé.
+    Le dire tout de suite fait partie du métier visé.</p>
+  </div>
+
+  <div class="foot">
+    <span>Full remote recherché · déplacements ponctuels sans difficulté</span>
+    <span>TryHackMe : CocoBlues · handball en compétition 9 ans, dont entraîneur</span>
+  </div>
+
+</article>
+
+</body>
+</html>
