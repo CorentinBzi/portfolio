@@ -3,152 +3,128 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quelqu'un sur place — Corentin Bezille</title>
-<meta name="description" content="Le CV de Corentin Bezille en jeu : une ville cyberpunk, sept quartiers, six métiers de l'informatique et de la cybersécurité. Candidature Forward Deployed Engineer.">
+<title>Couche par couche — Corentin Bezille</title>
+<meta name="description" content="Portfolio de Corentin Bezille, cybersécurité et IA : une cité-système en parallaxe, sept niveaux jouables, et un CV complet lisible à tout moment sans jouer.">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0B0E11">
-<meta property="og:title" content="Quelqu'un sur place">
-<meta property="og:description" content="Une ville de nuit, une place, sept quartiers, un CV qui se joue.">
-
+<meta name="theme-color" content="#232C66">
+<meta property="og:title" content="Couche par couche — Corentin Bezille">
+<meta property="og:description" content="Cybersécurité et IA. Sept niveaux, chacun déchiffre une partie du CV ; le CV complet se lit sans jouer.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@600;700;800&display=swap">
-
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-} }
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="src/styles/base.css">
+<link rel="stylesheet" href="src/styles/amorcage.css">
+<link rel="stylesheet" href="src/styles/carte.css">
+<link rel="stylesheet" href="src/styles/hud.css">
+<link rel="stylesheet" href="src/styles/cv.css">
+<script>
+  // Journal d'erreurs dans le DOM : lisible en headless par --dump-dom.
+  (function () {
+    var tampon = [];
+    function ecrire(m) {
+      var j = document.getElementById('journal');
+      if (!j) { tampon.push(m); return; }
+      if (tampon.length) { j.textContent += tampon.join('\n') + '\n'; tampon = []; }
+      j.textContent += m + '\n';
+    }
+    addEventListener('error', function (e) { ecrire('ERREUR ' + (e.message || '') + ' @' + (e.filename || '') + ':' + (e.lineno || '')); });
+    addEventListener('unhandledrejection', function (e) { var r = e.reason; ecrire('REJET ' + String((r && (r.stack || r.message)) || r)); });
+    window.__journal = ecrire;
+  })();
 </script>
-
-<style>
-:root{
-  --fond:#0B0E11; --panneau:#11161B; --ligne:#2B3843; --texte:#C8D3DA; --texte2:#7A8A96;
-  --sonde:#FFB454; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"Archivo",system-ui,sans-serif;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--fond);color:var(--texte);font:14px/1.5 var(--mono);overflow:hidden;
-  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-a{color:var(--sonde)}
-kbd{font:500 10px/1 var(--mono);border:1px solid var(--ligne);border-radius:2px;padding:3px 5px;color:var(--texte);background:#0E1318}
-
-.bar{display:flex;align-items:center;gap:14px;flex:none;padding:9px 14px;border-bottom:1px solid var(--ligne);background:var(--panneau);z-index:3}
-.bar h1{font:800 14px/1 var(--sans);margin:0;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar h1 em{font-style:normal;color:var(--texte2);font-weight:600}
-.bar .sp{flex:1}
-.btn{font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--texte);
-  background:transparent;border:1px solid var(--ligne);border-radius:2px;padding:8px 12px;cursor:pointer;text-decoration:none;white-space:nowrap}
-.btn:hover{border-color:var(--sonde);color:var(--sonde)}
-.btn.fort{background:var(--sonde);border-color:var(--sonde);color:#0B0E11}
-.btn.fort:hover{opacity:.88;color:#0B0E11}
-.btn:focus-visible{outline:2px solid #7FA3FF;outline-offset:2px}
-
-#scene{flex:1;min-height:0;position:relative;background:#07090B}
-#scene canvas{display:block}
-
-/* ---- HUD par-dessus la ville ---- */
-#hud{position:absolute;inset:0;pointer-events:none;z-index:2}
-#quartier{position:absolute;left:14px;top:12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--texte);
-  background:rgba(11,14,17,.78);padding:5px 9px;border-radius:2px;border-left:2px solid var(--sonde)}
-#cles{position:absolute;left:14px;top:40px;display:flex;gap:7px;background:rgba(11,14,17,.78);padding:6px 9px;border-radius:2px}
-.cle{width:9px;height:9px;border:1px solid var(--c);border-radius:1px;transform:rotate(45deg);opacity:.55}
-.cle.ok{background:var(--c);opacity:1;box-shadow:0 0 8px var(--c)}
-#minicarte{position:absolute;right:14px;top:12px;width:96px;height:120px;border:1px solid var(--ligne);border-radius:2px}
-.poi{position:absolute;transform:translate(-50%,-100%);pointer-events:none;text-align:center;white-space:nowrap;
-  font-size:11px;letter-spacing:.06em;color:var(--texte);transition:opacity .2s}
-.poi b{display:block;font:800 12px/1.2 var(--sans);color:var(--c);letter-spacing:.12em;text-shadow:0 0 10px var(--c),0 1px 2px #000}
-.poi span{display:inline-block;background:rgba(11,14,17,.8);border:1px solid var(--c);border-radius:2px;padding:2px 7px;margin-top:3px;color:var(--texte2)}
-.poi::after{content:"";display:block;width:1px;height:14px;background:var(--c);margin:4px auto 0;opacity:.7}
-.poi.fait b::before{content:"\2713  ";color:#6FCF8E}
-#cap{position:absolute;left:14px;bottom:22px;display:flex;align-items:center;gap:10px;background:rgba(11,14,17,.82);
-  border:1px solid var(--ligne);border-left:3px solid var(--c,var(--sonde));border-radius:2px;padding:7px 12px 7px 10px;font-size:12px;letter-spacing:.06em}
-#cap[hidden]{display:none}
-#cap i{display:block;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:14px solid var(--c,var(--sonde));
-  transform-origin:50% 60%;transition:transform .15s linear}
-#cap span{color:var(--texte)}
-#cap::before{content:"PROCHAIN";font-size:9px;letter-spacing:.14em;color:var(--texte2);margin-right:2px}
-#invite{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(11,14,17,.86);
-  border:1px solid var(--ligne);border-left:3px solid var(--sonde);border-radius:2px;padding:9px 14px;font-size:13px;white-space:nowrap}
-#invite[hidden]{display:none}
-
-/* ---- panneau (relevé, résultat) ---- */
-#panneau{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.72);z-index:6;padding:20px}
-#panneau[hidden]{display:none}
-.pan-in{background:var(--panneau);border:1px solid var(--ligne);border-radius:3px;max-width:600px;width:100%;padding:22px 24px;max-height:92%;overflow:auto}
-.pan-k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;color:var(--sonde)}
-.pan-in h2{font:700 19px/1.2 var(--sans);margin:0 0 3px;letter-spacing:-.01em}
-.pan-in h2 span{font:400 12px var(--mono);color:var(--texte2);margin-left:8px}
-.pan-p{color:var(--texte2);font-size:12.5px;margin:0 0 14px}
-.pan-in p{margin:0 0 12px;font-size:13.5px;line-height:1.62}
-.pan-w{border-top:1px solid var(--ligne);padding-top:12px;color:var(--texte2)}
-.pan-w b,.pan-j b{color:var(--texte)}
-.pan-j{background:#0B0E11;border:1px solid var(--ligne);border-radius:2px;padding:10px 12px;font-size:13px}
-.pan-btns{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
-
-/* ---- conteneur d'un jeu ---- */
-#jeu{position:absolute;inset:0;z-index:5;background:#07090C}
-#jeu[hidden]{display:none}
-
-/* ---- pad tactile ---- */
-#pad{display:none;position:absolute;inset:0;z-index:4;pointer-events:none}
-#pad .joy{position:absolute;left:0;bottom:0;width:50%;height:46%;pointer-events:auto;touch-action:none}
-#pad .act{position:absolute;right:18px;bottom:18px;width:74px;height:74px;border-radius:50%;pointer-events:auto;touch-action:none;
-  border:1px solid var(--sonde);background:rgba(255,180,84,.14);color:var(--sonde);font:600 11px var(--mono);letter-spacing:.08em;
-  display:flex;align-items:center;justify-content:center}
-@media (pointer:coarse){ #pad{display:block} .aide{display:none} }
-
-.aide{flex:none;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;padding:8px 14px;border-top:1px solid var(--ligne);
-  font-size:11px;color:var(--texte2);letter-spacing:.04em}
-.aide b{color:var(--texte);font-weight:500}
-@media (max-width:720px){ .aide{display:none} .bar h1 em{display:none} }
-@media (max-width:560px){ .bar a[href="cv.html"]{display:none} .bar{gap:8px} #minicarte{width:72px;height:90px} }
-
-#repli{padding:28px 20px;text-align:center;color:var(--texte2);max-width:560px;margin:auto}
-#repli h2{font:700 18px var(--sans);color:var(--texte);margin:0 0 10px}
-</style>
 </head>
 <body>
+<a class="saut" id="saut-cv" href="cv.html">Aller au CV complet</a>
 
-<header class="bar">
-  <h1>Quelqu'un sur place <em>— le CV de Corentin Bezille, en ville</em></h1>
-  <span class="sp"></span>
-  <button id="btn-dossier" class="btn" type="button">Dossier</button>
-  <a class="btn" href="cv.html">CV</a>
-  <a class="btn fort" href="mailto:corentin.bezille1756@gmail.com?subject=Forward%20Deployed%20Engineer">Écrire</a>
+<header id="barre">
+  <div class="b-gauche">
+    <span class="b-mono" aria-hidden="true">CB</span>
+    <h1 class="b-nom">Corentin Bezille</h1>
+    <span class="b-visee" id="b-visee"></span>
+    <div class="b-jeu" hidden>
+      <button class="btn b-retour" id="b-retour" type="button" aria-label="Revenir à la carte"><span aria-hidden="true">←</span><span class="b-retour-txt">Carte</span></button>
+      <span class="b-jeu-verbe"></span>
+      <span class="b-jeu-titre"></span>
+      <span class="b-jeu-mention" hidden>SCÉNARIO · mise en situation</span>
+    </div>
+  </div>
+  <div class="b-centre" id="b-trousseau"></div>
+  <div class="b-droite">
+    <button class="btn b-anim" id="b-anim" type="button" aria-pressed="true" hidden>Animations</button>
+    <a class="btn b-dossier" href="dossier.html">Dossier</a>
+    <a class="btn b-ecrire" id="b-ecrire" href="mailto:corentin.bezille1756@gmail.com">Écrire</a>
+    <a id="cv-complet" class="btn or" href="cv.html">CV complet</a>
+  </div>
 </header>
 
-<div id="scene">
-  <div id="hud">
-    <div id="quartier"></div>
-    <div id="cles"></div>
-    <canvas id="minicarte" width="96" height="120" aria-hidden="true"></canvas>
-    <div id="invite" hidden></div>
-    <div id="cap" hidden><i aria-hidden="true"></i><span></span></div>
+<div id="amorcage">
+  <div class="am-panneau" role="region" aria-label="Amorçage du portfolio">
+    <div class="am-titre"><span class="am-feux" aria-hidden="true"><i></i><i></i><i></i></span><span>corentin@cite-systeme:~ — amorçage</span></div>
+    <div class="am-pied"><span class="am-aide">Entrée ou Échap : passer · C : CV complet</span><button id="am-passer" class="btn" type="button">Passer ▸</button></div>
+    <div class="am-corps">
+      <div class="am-pile" aria-hidden="true">
+        <div class="am-couche" data-couche="modele" style="--teinte:#B98BFF"><svg viewBox="0 0 20 20"><circle cx="4" cy="10" r="2"/><circle cx="16" cy="4.5" r="2"/><circle cx="16" cy="15.5" r="2"/><path d="M6 10l8-5M6 10l8 5M16 6.5v7"/></svg><span>Modèle</span></div>
+        <div class="am-couche" data-couche="sites" style="--teinte:#F07AA8"><svg viewBox="0 0 20 20"><path d="M2 17h16M4 17V8l6-4 6 4v9M8 17v-4h4v4"/></svg><span>Sites</span></div>
+        <div class="am-couche" data-couche="usages" style="--teinte:#FFB454"><svg viewBox="0 0 20 20"><rect x="3" y="3.5" width="14" height="10" rx="1.5"/><path d="M7 17h6M10 13.5V17"/></svg><span>Usages</span></div>
+        <div class="am-couche" data-couche="donnees" style="--teinte:#7BE8A8"><svg viewBox="0 0 20 20"><ellipse cx="10" cy="5" rx="5" ry="2"/><path d="M5 5v10c0 1.1 2.2 2 5 2s5-.9 5-2V5M5 10c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg><span>Données</span></div>
+        <div class="am-couche" data-couche="reseau" style="--teinte:#43F0E6"><svg viewBox="0 0 20 20"><path d="M10 2 5.5 18M10 2l4.5 16M7 13h6M8.3 8h3.4M3.5 6h13"/></svg><span>Réseau</span></div>
+        <div class="am-couche" data-couche="socle" style="--teinte:#9DB4E8"><svg viewBox="0 0 20 20"><rect x="5" y="2" width="10" height="16" rx="1.5"/><path d="M7.5 6h5M7.5 10h5M7.5 14h5"/></svg><span>Socle</span></div>
+      </div>
+      <div class="am-journal" aria-hidden="true">
+        <p class="am-l titre">COUCHE PAR COUCHE · amorçage du portfolio de Corentin Bezille</p>
+        <p class="am-l">$ amorcer --profil cyber-ia --lecture-seule</p>
+      </div>
+    </div>
   </div>
-  <div id="pad" aria-hidden="true"><div class="joy"></div><div class="act">ENTRER</div></div>
-  <div id="panneau" hidden></div>
-  <div id="jeu" hidden></div>
-  <noscript><div id="repli"><h2>La ville a besoin de JavaScript</h2>
-    <p>Tout le contenu se lit sans lui : <a href="dossier.html">ouvrir le dossier</a> ou <a href="cv.html">le CV</a>.</p></div></noscript>
+  <p class="sr-only" role="status">Chargement du portfolio. Passer, ou ouvrir le CV complet.</p>
 </div>
-
-<div class="aide">
-  <span><kbd>←</kbd><kbd>→</kbd> <b>tourner</b> · <kbd>↑</kbd><kbd>↓</kbd> <b>avancer</b></span>
-  <span><kbd>Maj</kbd> <b>accélérer</b></span>
-  <span><kbd>Espace</kbd> <b>entrer dans un quartier</b></span>
-  <span><kbd>Maj</kbd>+<kbd>D</kbd> <b>dossier</b></span>
-</div>
-
-<pre id="journal" hidden></pre>
 <script>
-  // Journal d'erreurs dans le DOM : lisible en headless par --dump-dom, quand aucune console n'est visible.
-  (function(){ const j=document.getElementById('journal'); const ecrire=m=>{ j.textContent += m + String.fromCharCode(10); };
-    addEventListener('error', e => ecrire('ERREUR ' + (e.message||'') + ' @' + (e.filename||'') + ':' + (e.lineno||'')));
-    addEventListener('unhandledrejection', e => ecrire('REJET ' + String(e.reason && (e.reason.stack || e.reason.message || e.reason))));
-    window.__journal = ecrire; })();
+  (function () {
+    var am = document.getElementById('amorcage');
+    window.__cpc = window.__cpc || {};
+    document.getElementById('am-passer').addEventListener('click', function () {
+      if (window.__cpcPret !== true) { window.__cpc.passer = true; am.classList.add('am-attente'); }
+    });
+    setTimeout(function () {
+      if (window.__cpcPret === true) return;
+      var p = am.querySelector('.am-panneau');
+      p.innerHTML = '<div class="am-echec"><p>La carte n’a pas pu démarrer. Le CV reste lisible :</p>' +
+        '<p class="am-liens"><a class="btn or" href="cv.html">CV imprimable</a> <a class="btn" href="dossier.html">Dossier à lire</a></p></div>';
+    }, 6000);
+  })();
 </script>
-<script type="module" src="src/main.js"></script>
+
+<svg class="baie-statique" aria-hidden="true" viewBox="0 0 1440 300" preserveAspectRatio="none">
+  <path fill="#8C86C8" d="M0 170C160 120 320 150 480 130S800 100 960 140s320-20 480 10V300H0z"/>
+  <path fill="#3A3C7E" d="M0 220h60v-50h40v30h50v-70h40v60h70v-40h50v50h60v-90h30v80h80v-30h50v40h90v-60h40v50h60v-110h30v100h70v-40h60v30h80v-70h40v60h90v-30h60v40h90v-50h50v20h150V300H0z"/>
+  <path fill="#1F2458" d="M0 262q360-22 720-4t720-8V300H0z"/>
+</svg>
+
+<canvas id="monde" aria-hidden="true"></canvas>
+<div id="balises" aria-hidden="true"></div>
+<p id="indice" hidden>Glissez pour parcourir 2018 → aujourd’hui · touchez un quartier</p>
+<nav id="rail" aria-label="Niveaux">
+  <div class="r-pile" aria-hidden="true"></div>
+  <div class="r-puces" role="toolbar" aria-label="Sept niveaux, du plus ancien au plus récent"></div>
+</nav>
+<section id="fiche" hidden></section>
+<div id="volet" aria-hidden="true" hidden></div>
+<section id="jeu" hidden aria-label="Jeu en cours">
+  <canvas class="jeu-instantane" aria-hidden="true"></canvas>
+  <div class="jeu-ecran" tabindex="-1"></div>
+</section>
+<section id="recompense" hidden aria-label="Récompense"></section>
+<div id="toast" role="status" hidden></div>
+<dialog id="cv" aria-labelledby="cv-titre"></dialog>
+<div id="annonces" class="sr-only" aria-live="polite"></div>
+<noscript>
+  <style>#amorcage, #rail { display: none !important; }</style>
+  <div class="sans-js">
+    <p>Le portfolio jouable a besoin de JavaScript. Tout le contenu se lit sans lui :</p>
+    <p><a class="btn or" href="cv.html">CV imprimable</a> <a class="btn" href="dossier.html">Dossier à lire</a></p>
+  </div>
+</noscript>
+<pre id="journal" hidden></pre>
+<script type="module" src="src/app.js"></script>
 </body>
 </html>

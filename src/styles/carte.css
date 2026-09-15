@@ -1,0 +1,84 @@
+/* La carte, les balises, le volet de plongée et le conteneur de jeu. */
+#monde {
+  position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1;
+  touch-action: none; -webkit-user-select: none; user-select: none;
+}
+
+#balises { position: fixed; inset: 0; z-index: 200; pointer-events: none; overflow: hidden; }
+html[data-ecran="amorcage"] #balises, html[data-ecran="jeu"] #balises { visibility: hidden; }
+.balise {
+  position: absolute; left: 0; top: 0; pointer-events: auto; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; min-width: 44px; min-height: 44px;
+  padding: 0; margin: 0; border: 0; background: none; font: inherit; color: var(--texte);
+  will-change: transform;
+}
+.bl-etiquette {
+  display: flex; align-items: center; gap: 7px; padding: 6px 11px 6px 9px; border-radius: 9px;
+  background: var(--verre); -webkit-backdrop-filter: blur(8px) saturate(140%); backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--acc) 55%, transparent);
+  box-shadow: 0 6px 18px rgba(8, 10, 40, .35), 0 0 16px color-mix(in srgb, var(--acc) 22%, transparent);
+  white-space: nowrap; transition: border-color .2s, box-shadow .2s;
+}
+.bl-pastille {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--acc); flex: none;
+  animation: bl-pouls 2.4s ease-out infinite;
+}
+.bl-nom { font: 700 13px/1.1 var(--police-titre); letter-spacing: .01em; }
+.bl-marque {
+  display: none; font: 500 10px/1 var(--police-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--texte-2);
+  padding-left: 7px; border-left: 1px solid var(--ligne);
+}
+.bl-pointe { width: 2px; height: 14px; background: linear-gradient(var(--acc), transparent); }
+.balise.selection .bl-etiquette, .balise:hover .bl-etiquette, .balise.survol .bl-etiquette {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 1px var(--acc), 0 8px 24px rgba(8, 10, 40, .4), 0 0 26px color-mix(in srgb, var(--acc) 45%, transparent);
+}
+.balise.selection .bl-marque, .balise:hover .bl-marque, .balise.survol .bl-marque, .balise.gagne .bl-marque { display: inline; }
+.balise.gagne .bl-pastille { animation: none; box-shadow: 0 0 10px var(--acc); }
+.balise.gagne .bl-marque { color: var(--ok); }
+.balise.indispo .bl-etiquette { filter: grayscale(1); opacity: .85; }
+@keyframes bl-pouls {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--acc) 75%, transparent); }
+  70% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--acc) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+#volet {
+  position: fixed; inset: var(--haut) 0 0 0; z-index: 800; pointer-events: none;
+  background: radial-gradient(circle at var(--vx, 50%) var(--vy, 50%), color-mix(in srgb, var(--acc) 85%, #fff), var(--acc) 30%, color-mix(in srgb, var(--acc) 35%, #1A1F4D) 80%);
+  clip-path: circle(0% at var(--vx, 50%) var(--vy, 50%));
+}
+#volet.ouvert { clip-path: circle(150% at var(--vx, 50%) var(--vy, 50%)); transition: clip-path 260ms var(--courbe); }
+#volet.fondu { opacity: 0; transition: opacity 240ms ease; }
+
+#jeu { position: fixed; top: var(--haut); left: 0; right: 0; bottom: 0; z-index: 500; background: #07090C; overflow: hidden; }
+#jeu .jeu-instantane { display: none; }
+#jeu .jeu-ecran { position: absolute; inset: 0; outline: none; overflow: hidden; background: #07090C; }
+@media (min-width: 1100px) {
+  #jeu { background: #232C66; }
+  #jeu .jeu-instantane {
+    display: block; position: absolute; left: -40px; top: -40px; width: calc(100% + 80px); height: calc(100% + 80px);
+    filter: blur(12px) saturate(1.25) brightness(1.05);
+  }
+  #jeu .jeu-ecran {
+    inset: 24px; border-radius: 14px; border: 1px solid var(--acc);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 30%, transparent), 0 0 48px color-mix(in srgb, var(--acc) 38%, transparent), var(--ombre);
+  }
+}
+/* Sous 1100 px : plein écran sous la barre, cadré d'un liseré d'accent (les jeux conservés sont sombres). */
+@media (max-width: 1099.98px) {
+  #jeu { background: #232C66; }
+  #jeu .jeu-ecran { inset: 4px; border-radius: 10px; border: 2px solid var(--acc); box-shadow: 0 0 18px color-mix(in srgb, var(--acc) 40%, transparent); }
+}
+
+/* Monde en panne (création de la carte en échec) : la silhouette statique reste, la fiche se pose sous la barre. */
+html.monde-en-panne .baie-statique { opacity: 1; }
+@media (min-width: 761px) {
+  html.monde-en-panne #fiche { left: 50%; top: calc(var(--haut) + 24px); transform: translateX(-50%) !important; }
+}
+
+.cle-vol {
+  position: fixed; left: 0; top: 0; width: 26px; height: 30px; margin: -15px 0 0 -13px; z-index: 1050; pointer-events: none;
+  background: var(--acc); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  filter: drop-shadow(0 0 8px var(--acc));
+}

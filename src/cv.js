@@ -2,6 +2,18 @@
 // Les niveaux ne contiennent aucun fait : ils citent une clé. Le validateur
 // refuse de démarrer sur une clé inconnue, donc le jeu ne peut pas inventer
 // une ligne de CV. C'est une garantie obtenue par construction.
+//
+// Forme gelée (lue par la coquille, les jeux, le terminal d'amorçage) :
+//   FAITS        clés medline, thales, albys, independant, digitalrealty, ecole, scenario ;
+//                champs employeur, periode, poste, texte, pourLePoste (chaînes)
+//   CLES         Object.keys(FAITS)
+//   PROFIL       { nom, visee, lieu, email, github, tryhackme }
+//   FORMATION    [{ titre, ou, quand }] × 3, du plus haut diplôme au premier
+//   COMPETENCES  [{ groupe, items }], six groupes aux noms fixes
+//   A_APPRENDRE  chaîne : un objectif d'apprentissage, présenté comme tel
+//
+// Toute mise à jour du parcours se fait ici, et cv.html / dossier.html s'alignent.
+// La fiche « scenario » est une MISE EN SITUATION : elle ne revendique aucune expérience.
 
 export const FAITS = Object.freeze({
   medline: {
@@ -40,7 +52,7 @@ export const FAITS = Object.freeze({
     poste: "Développeur d'outils de sécurité",
     texte: "Outil on-premise de sécurité de domaine et de supervision DMARC : analyse des " +
            "rapports d'authentification, alertes automatiques contre l'usurpation. " +
-           "Modélisation de risques pour préparer un passage en SaaS. Script Python " +
+           "Modélisation de risques pour préparer un passage en SaaS. Script " +
            "d'automatisation de veille sur la menace bâti sur l'API ChatGPT.",
     pourLePoste: "Passer du geste répété à l'outil qui le remplace, et en assumer " +
                  "les effets de bord.",
@@ -63,19 +75,23 @@ export const FAITS = Object.freeze({
            "SecNumEdu (2021-2023). Avant cela, un Bachelor informatique option cybersécurité " +
            "(2020-2021) et un BTS SIO option SISR (2018-2020). Enseignements centraux : gestion " +
            "des risques, continuité et reprise d'activité, investigation numérique, tests " +
-           "d'intrusion. Cinq années en alternance, donc en entreprise la moitié du temps.",
+           "d'intrusion. Cinq années en alternance.",
     pourLePoste: "Une base solide en systèmes, réseaux et sécurité offensive, apprise en " +
                  "alternance, donc jamais loin d'une machine réelle.",
   },
   scenario: {
     employeur: 'SCÉNARIO',
     periode: 'mise en situation',
-    poste: 'Forward Deployed Engineer — le poste visé',
-    texte: "Ce niveau est une mise en situation, pas une expérience professionnelle. " +
-           "Aucun fait de parcours n'y est revendiqué. Il montre ce que je ferais " +
-           "le premier jour chez vous.",
-    pourLePoste: "Diagnostiquer de bout en bout, puis l'expliquer à quelqu'un " +
-                 "dont ce n'est pas le métier.",
+    poste: 'Analyste sécurité face à un agent IA détourné — mise en situation',
+    texte: "Ce niveau est une mise en situation, pas une expérience professionnelle : aucun " +
+           "fait de parcours n'y est revendiqué, et l'entreprise, l'agent, les journaux et les " +
+           "chiffres sont inventés. Un agent IA qui pré-trie les alertes de sécurité en a fermé " +
+           "trente-sept en quarante minutes, parce qu'il a obéi à une consigne cachée dans les " +
+           "journaux qu'il lisait. Le niveau montre comment j'aborderais ce cas : contenir sans " +
+           "détruire la preuve, remonter les couches jusqu'à la cause, corriger dans l'ordre, " +
+           "puis l'expliquer.",
+    pourLePoste: "Diagnostiquer de bout en bout un système où sécurité et IA se mêlent, puis " +
+                 "l'expliquer à quelqu'un dont ce n'est pas le métier.",
   },
 });
 
@@ -83,8 +99,8 @@ export const CLES = Object.keys(FAITS);
 
 export const PROFIL = Object.freeze({
   nom: 'Corentin Bezille',
-  visee: 'Forward Deployed Engineer',
-  lieu: 'Buc (78) · full remote recherché',
+  visee: 'Cybersécurité & IA appliquée',
+  lieu: 'Buc (78) · Vannes, full remote ou Yvelines',
   email: 'corentin.bezille1756@gmail.com',
   github: 'https://github.com/CorentinBzi',
   tryhackme: 'https://tryhackme.com/p/CocoBlues',
@@ -97,7 +113,7 @@ export const FORMATION = Object.freeze([
 ]);
 
 export const COMPETENCES = Object.freeze([
-  { groupe: 'Diagnostic & exploitation', items: "Analyse de journaux, isolement de cause, coordination d'incident, engagements de service, escalade technique." },
+  { groupe: 'Diagnostic & exploitation', items: "Analyse de journaux, diagnostic de panne, coordination d'incident, engagements de service, escalade technique." },
   { groupe: 'Développement', items: 'Python, Bash, PowerShell, Go, C, C#, SQL/MariaDB, PHP. Git.' },
   { groupe: 'IA appliquée', items: 'API OpenAI, Gemini, Mistral. Ollama en local. IA agentique. Intégration de modèles dans des chaînes automatisées.' },
   { groupe: 'Systèmes & réseaux', items: 'Linux, Windows Server, Active Directory, Cisco, Ubiquiti, pare-feu, VPN, VLAN.' },
@@ -105,7 +121,8 @@ export const COMPETENCES = Object.freeze([
   { groupe: 'Langues', items: 'Français natif. Anglais professionnel, TOEIC 875.' },
 ]);
 
+// Objectif d'apprentissage, pas un fait : la première phrase dit ce qui n'a pas
+// encore été fait, la seconde est une intention.
 export const A_APPRENDRE =
-  "Je n'ai pas encore servi de modèle en production sur une stack GPU, ni travaillé en " +
-  "établissement de santé. Mes trois premiers mois iraient au service de modèles, à " +
-  "l'observabilité applicative et au cadre d'hébergement des données de santé.";
+  "Je n'ai pas encore mis de modèle en production sur une infrastructure GPU. Mes premiers mois " +
+  "iraient à l'observabilité des systèmes à base de modèles et au cadre réglementaire de l'IA.";

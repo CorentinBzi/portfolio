@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Vérification de la coquille</title>
+<style>
+body{background:#1A1F4D;color:#EEF1FF;font:13px/1.6 ui-monospace,Menlo,monospace;margin:0;padding:16px}
+h1{font-size:15px;margin:0 0 10px}.ok{color:#6FCF8E}.ko{color:#FF8A76}
+</style></head><body>
+<h1>Vérification des modules purs de la coquille (spec §9.2)</h1>
+<pre id="sortie">…</pre>
+<pre id="journal"></pre>
+<script>
+  addEventListener('error', function (e) { document.getElementById('journal').textContent += 'ERREUR ' + e.message + ' @' + e.filename + ':' + e.lineno + '\n'; document.title = 'VERIF KO'; });
+  addEventListener('unhandledrejection', function (e) { document.getElementById('journal').textContent += 'REJET ' + String(e.reason && (e.reason.stack || e.reason.message || e.reason)) + '\n'; document.title = 'VERIF KO'; });
+</script>
+<script type="module">
+import { FAITS, CLES, PROFIL, FORMATION, COMPETENCES } from '../src/cv.js';
+import { NIVEAUX, SECTIONS, ORDRE_SECTIONS, verifierNiveaux, slugSection, sectionDepuisSlug, niveauDeSection } from '../src/niveaux.js';
+import { ETAT_INITIAL, transition, invariants } from '../src/etat.js';
+import { lireParametres } from '../src/parametres.js';
+import * as P from '../src/progression.js';
+import { construireScript, libelleCouche } from '../src/amorcage/script.js';
+import { projeter, echelle, echelleDessin, aimanter, inertie } from '../src/carte/camera.js';
+import { placements, degagements, PLANS } from '../src/carte/niveaux-carte.js';
+
+const lignes = [];
+const verifier = (ok, texte) => lignes.push(`${ok ? 'PASS' : 'FAIL'}  ${texte}`);
+
+// 1. Niveaux cohérents avec cv.js
+const erreursNiveaux = verifierNiveaux({ FAITS, COMPETENCES });
+verifier(erreursNiveaux.length === 0, `verifierNiveaux() vide ${erreursNiveaux.length ? ':: ' + erreursNiveaux.join(' · ') : ''}`);
+
+// 2. Table §4 au caractère près
+const TABLE = [
+  ['ecole', 'Le campus', 'APPRENDRE', '#F2D13B'], ['medline', 'Le helpdesk', 'TRADUIRE', '#8FB4D6'],
+  ['thales', 'Avant que ça sature', 'INSTRUMENTER', '#3EE0C0'], ['albys', 'Les cloisons', 'SEGMENTER', '#A98BFF'],
+  ['independant', "Du geste à l'outil", 'AUTOMATISER', '#FF9A5C'], ['digitalrealty', 'La supervision', 'COORDONNER', '#5AA9E6'],
+  ['scenario', "Qui a parlé à l'agent ?", 'DIAGNOSTIQUER', '#FF6FD8'],
+];
+const tableOk = TABLE.every(([id, t, v, a], k) => NIVEAUX[k].id === id && NIVEAUX[k].titre === t && NIVEAUX[k].verbe === v && NIVEAUX[k].accent === a);
+verifier(tableOk, 'NIVEAUX : ordre, titre, verbe, accent = table §4');
+verifier(NIVEAUX.filter((n) => n.miseEnSituation).map((n) => n.id).join() === 'scenario', 'seul scenario est une mise en situation');
+verifier(ORDRE_SECTIONS.every((id) => sectionDepuisSlug(slugSection(id)) === id), 'slugSection réversible pour chaque section');
+verifier(['identite', 'en_bref', 'competence:Langues'].every((id) => SECTIONS[id].toujours && !niveauDeSection(id)), 'identité, en bref, langues toujours visibles');
+
+// 3. Machine d'états : invariants sur une suite d'événements
+const suite = [
+  { type: 'SELECTIONNER', id: 'albys' }, { type: 'OUVRIR_FICHE' }, { type: 'AMORCAGE_FINI' }, { type: 'OUVRIR_FICHE' },
+  { type: 'OUVRIR_CV', onglet: 'cles' }, { type: 'JOUER', id: 'albys' }, { type: 'OUVRIR_FICHE' }, { type: 'SELECTIONNER', id: 'ecole' },
+  { type: 'FERMER_CV' }, { type: 'JEU_GAGNE', id: 'albys', resultat: { score: 90, message: 'ok' } }, { type: 'FERMER_RECOMPENSE' },
+  { type: 'JOUER', id: 'medline' }, { type: 'JEU_QUITTE' }, { type: 'FERMER_FICHE' }, { type: 'INCONNU' },
+];
+let e = ETAT_INITIAL;
+let violations = [];
+for (const ev of suite) { e = transition(e, ev); violations = violations.concat(invariants(e).map((v) => `${ev.type}: ${v}`)); }
+verifier(violations.length === 0, `transition : invariants tenus sur ${suite.length} événements ${violations.join(' · ')}`);
+const e1 = transition(ETAT_INITIAL, { type: 'OUVRIR_FICHE' });
+verifier(e1 === ETAT_INITIAL, 'pas de fiche pendant l’amorçage');
+const e2 = transition(transition(ETAT_INITIAL, { type: 'JOUER', id: 'ecole' }), { type: 'OUVRIR_CV', onglet: 'complet' });
+verifier(e2.ecran === 'jeu' && e2.cv && e2.cv.onglet === 'complet', 'CV ouvrable pendant un jeu');
+verifier(e.ecran === 'carte' && e.jeu === null && e.selection === 'medline', 'état final cohérent');
+
+// 4. Progression : pas de mutation, meilleur score, migration, validation
+const p0 = P.progressionVide();
+const p1 = P.avecCle(p0, 'albys', { score: 80, message: 'm1' }, '2026-01-01');
+const p2 = P.avecCle(p1, 'albys', { score: 60, message: 'm2' }, '2026-01-02');
+verifier(P.nbCles(p0) === 0 && Object.isFrozen(p1) && Object.isFrozen(p1.cles), 'avecCle ne mute pas et gèle');
+verifier(p2.cles.albys.score === 80 && p2.cles.albys.message === 'm2', 'avecCle garde le meilleur score');
+const faux = (donnees) => ({ getItem: (k) => (k in donnees ? donnees[k] : null), setItem: (k, v) => { donnees[k] = v; }, removeItem: (k) => { delete donnees[k]; } });
+const migree = P.lireProgression(faux({ 'qsp3d.v2': JSON.stringify({ cles: ['ecole', 'thales', 'digitalrealty', 'pirate'] }) }), NIVEAUX.map((n) => n.id));
+verifier(Object.keys(migree.cles).sort().join() === 'digitalrealty,ecole' && migree.cles.ecole.migree === true, 'migration qsp3d.v2 : seuls les jeux inchangés');
+const brute = { version: 3, vu: true, animations: 'reduites', cles: { medline: { score: 'x', message: 'y'.repeat(900), date: 3 }, pirate: {} } };
+const validee = P.validerProgression(brute, NIVEAUX.map((n) => n.id));
+verifier(!validee.cles.pirate && validee.cles.medline.score === null && validee.cles.medline.message.length === 300 && validee.animations === 'reduites', 'validation : ids, score, message ≤ 300');
+const cassee = { getItem() { throw new Error('bloqué'); }, setItem() { throw new Error('bloqué'); } };
+verifier(P.nbCles(P.lireProgression(cassee, ['ecole'])) === 0 && P.ecrireProgression(p1, cassee) === false && P.stockageDisponible(cassee) === false, 'stockage bloqué : repli sans exception');
+verifier(P.nbCles(P.progressionForcee('all', CLES)) === CLES.length && P.suggere(p1, NIVEAUX.map((n) => n.id)) === 'ecole', 'progres=all et niveau suggéré');
+
+// 5. Paramètres : liste blanche
+const ids = NIVEAUX.map((n) => n.id);
+const a = lireParametres('?niveau=pirate&jeu=../../x&progres=tout&t=abc', '', ids);
+verifier(a.niveau === null && a.jeu === null && a.progres === null && a.t === null && a.boot === true, 'lireParametres refuse les valeurs inconnues');
+const b = lireParametres('?boot=0&capture=1&t=2400&anim=0&progres=none', '#cv/experience-albys', ids);
+verifier(!b.boot && b.capture && b.t === 2400 && b.anim === 'reduites' && b.progres === 'none' && b.cv.ancre === 'experience-albys', 'lireParametres : boot, capture, t, anim, #cv/ancre');
+verifier(lireParametres('?jeu=medline', '', ids).boot === false && lireParametres('?cv=1', '', ids).cv.onglet === 'complet', '?jeu et ?cv sautent l’amorçage');
+
+// 6. Script d'amorçage : chaque valeur factuelle vient de cv.js
+const script = construireScript({ FAITS, CLES, FORMATION, COMPETENCES, NIVEAUX, PROFIL, progression: p1, verifierNiveaux, polices: async () => true, plan: async () => true });
+const presentation = script.find((l) => l.id === 'presentation').texte;
+verifier(presentation.includes(PROFIL.nom) && presentation.includes(FAITS.digitalrealty.poste) && presentation.includes(FORMATION[0].titre), 'présentation assemblée depuis cv.js');
+const faits = await script.find((l) => l.id === 'faits').verifier();
+verifier(faits.etat === 'ok' && faits.texte.includes(`${CLES.length} fiches`) && faits.texte.includes(`${FORMATION.length} formations`) && faits.texte.includes(`${COMPETENCES.length} groupes`), `ligne faits : ${faits.texte}`);
+const niv = await script.find((l) => l.id === 'niveaux').verifier();
+verifier(niv.texte.includes('7 déclarés') && niv.texte.includes('clés 1/7'), 'ligne niveaux calculée');
+verifier(libelleCouche('socle') === 'couche socle .........' && libelleCouche('réseau') === 'couche réseau ........', 'alignement des couches');
+const temps = script.map((l) => l.t);
+verifier(temps.every((t, i) => i === 0 || t >= temps[i - 1]) && Math.max(...temps) <= 4400, 'script ordonné, fini avant le repli');
+
+// 7. Caméra : chaque quartier centré à sa station, sur son plan
+const liste = placements(NIVEAUX);
+const W = 1440, H = 900, eEch = echelle(H, 56);
+const centres = liste.map((q) => projeter({ X: q.X, Y: q.base, facteur: q.facteur, camera: q.station, e: eEch, largeur: W, hauteur: H }));
+verifier(centres.every((c) => Math.abs(c.x - W / 2) < 1e-6), 'projeter centre chaque quartier à sa station');
+verifier(Math.abs(eEch - 0.844) < 0.001 && Math.abs(echelle(844, 48) - 0.796) < 0.001, 'échelle 1440×900 = 0,844 ; 390×844 = 0,796');
+const tour = liste.find((q) => q.id === 'scenario');
+const tourEcran = projeter({ X: tour.X, Y: tour.base, facteur: tour.facteur, camera: 0, e: eEch, largeur: W, hauteur: H });
+verifier(Math.abs(tourEcran.x / W - 0.94) < 0.01, `tour-noyau à ${(tourEcran.x / W).toFixed(3)} L quand c = 0`);
+verifier(Math.abs(echelleDessin(0.8) - 0.91) < 1e-9 && aimanter(1260, NIVEAUX.map((n) => n.station)) === 1400, 'échelle de dessin et aimantation');
+const r = inertie({ camera: 100, vitesse: 1 }, 16.667);
+verifier(r.vitesse < 1 && r.vitesse > 0.91 && r.camera > 100, 'inertie : friction 0,92 par image');
+verifier(degagements('socle', liste).length === 5 && degagements('horizon', liste).length === 0 && PLANS.socle.base === 930, 'dégagements : un par quartier plus lointain');
+
+const echecs = lignes.filter((l) => l.startsWith('FAIL')).length;
+lignes.push(echecs ? `\n${echecs} échec(s).` : `\nTout passe (${lignes.length} vérifications).`);
+document.getElementById('sortie').textContent = lignes.join('\n');
+document.title = echecs ? 'VERIF KO' : 'VERIF OK';
+</script></body></html>
