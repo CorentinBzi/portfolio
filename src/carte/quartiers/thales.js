@@ -1,4 +1,4 @@
-// Les silos (thales) : six silos de verre dont le liquide passe du teal à l'ambre, passerelle de
+// Le tableau de bord (thales) : six silos de verre dont le liquide passe du teal à l'ambre, passerelle de
 // supervision, grand mur-écran qui trace des courbes et une tendance en pointillés, discret collecte.py.
 
 import { rgba, melange, rect, disque, halo, texte, silo, liquide, trait, grilleFenetres, POLICE_MONO } from '../dessin.js';

@@ -45,7 +45,7 @@ La profondeur de la parallaxe **est** la pile technique : le concret au premier 
 | 0 | Ciel · **Modèle** | 0 | dégradé du ciel, soleil, constellation de neurones (une colonne par niveau) |
 | 1 | Horizon · **Sites** | 0,18 | îles, éoliennes, cinq campus « DC 1 » à « DC 5 », la tour-noyau |
 | 2 | Baie & **Usages** | 0,46 | mer, front de mer, pont, le guichet, le phare-trieur |
-| 3 | **Données** | 0,62 | quai des silos, convoyeur, les silos |
+| 3 | **Données** | 0,62 | quai des silos, convoyeur, le tableau de bord |
 | 4 | **Réseau** | 0,80 | pylônes, câbles aux couleurs des VLAN, le port de brassage |
 | 5 | **Socle** | 1,00 | sol côtier, coupe souterraine, le campus, le poste de sécurité |
 | 6 | Premier plan | 1,35 | roseaux, rochers, armoire de rue, câbles néon, bokeh |
@@ -57,7 +57,7 @@ La profondeur de la parallaxe **est** la pile technique : le concret au premier 
 |---|---|---|---|---|---|---|---|---|
 | 1 | `ecole` | Le campus | Le campus | Socle | ESIEE-IT | APPRENDRE | conservé | Formation + Compétences · Sécurité |
 | 2 | `medline` | Le helpdesk | Le guichet | Usages | MEDLINE | TRADUIRE | conservé | Expérience · Medline |
-| 3 | `thales` | Qui prend la place ? | Les silos | Données | THALES | INSTRUMENTER | refait | Expérience · Thales + Compétences · Développement |
+| 3 | `thales` | Qui prend la place ? | Le tableau de bord | Données | THALES | INSTRUMENTER | refait | Expérience · Thales + Compétences · Développement |
 | 4 | `albys` | Les cloisons | Le port de brassage | Réseau | ALBYS | SEGMENTER | refait | Expérience · Albys + Compétences · Systèmes & réseaux |
 | 5 | `independant` | Du geste à l'outil | Le phare-trieur | Usages | INDÉPENDANT | AUTOMATISER | refait | Expérience · Indépendant + Compétences · IA appliquée |
 | 6 | `digitalrealty` | La supervision | Le poste de sécurité | Socle | DIGITAL REALTY | COORDONNER | conservé | Expérience · Digital Realty + Compétences · Diagnostic & exploitation |
