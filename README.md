@@ -57,7 +57,7 @@ La profondeur de la parallaxe **est** la pile technique : le concret au premier 
 |---|---|---|---|---|---|---|---|---|
 | 1 | `ecole` | Le campus | Le campus | Socle | ESIEE-IT | APPRENDRE | conservé | Formation + Compétences · Sécurité |
 | 2 | `medline` | Le helpdesk | Le guichet | Usages | MEDLINE | TRADUIRE | conservé | Expérience · Medline |
-| 3 | `thales` | Avant que ça sature | Les silos | Données | THALES | INSTRUMENTER | refait | Expérience · Thales + Compétences · Développement |
+| 3 | `thales` | Qui prend la place ? | Les silos | Données | THALES | INSTRUMENTER | refait | Expérience · Thales + Compétences · Développement |
 | 4 | `albys` | Les cloisons | Le port de brassage | Réseau | ALBYS | SEGMENTER | refait | Expérience · Albys + Compétences · Systèmes & réseaux |
 | 5 | `independant` | Du geste à l'outil | Le phare-trieur | Usages | INDÉPENDANT | AUTOMATISER | refait | Expérience · Indépendant + Compétences · IA appliquée |
 | 6 | `digitalrealty` | La supervision | Le poste de sécurité | Socle | DIGITAL REALTY | COORDONNER | conservé | Expérience · Digital Realty + Compétences · Diagnostic & exploitation |

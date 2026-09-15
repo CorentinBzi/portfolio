@@ -20,7 +20,7 @@ export const NIVEAUX = Object.freeze([
       couche: 'socle', station: 0, sections: ['formation', 'competence:Sécurité'], miseEnSituation: false }),
   N({ id: 'medline', titre: 'Le helpdesk', verbe: 'TRADUIRE', accent: '#8FB4D6', quartier: 'Le guichet',
       couche: 'usages', station: 700, sections: ['experience:medline'], miseEnSituation: false }),
-  N({ id: 'thales', titre: 'Avant que ça sature', verbe: 'INSTRUMENTER', accent: '#3EE0C0', quartier: 'Les silos',
+  N({ id: 'thales', titre: 'Qui prend la place ?', verbe: 'INSTRUMENTER', accent: '#3EE0C0', quartier: 'Les silos',
       couche: 'donnees', station: 1400, sections: ['experience:thales', 'competence:Développement'], miseEnSituation: false }),
   N({ id: 'albys', titre: 'Les cloisons', verbe: 'SEGMENTER', accent: '#A98BFF', quartier: 'Le port de brassage',
       couche: 'reseau', station: 2100, sections: ['experience:albys', 'competence:Systèmes & réseaux'], miseEnSituation: false }),
